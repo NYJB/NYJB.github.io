@@ -1460,7 +1460,7 @@ $('#copyStory').onclick=async()=>{
 $('#chatChk').onchange=e=>{S.chatOn=e.target.checked;save();applyAll();};
 $('#reactChk').onchange=e=>{S.reactOn=e.target.checked;save();applyAll();};
 $('#chatClear').onclick=()=>{$('#chatList').innerHTML='';$('#starPop').innerHTML='';starQ.length=0;starBusy=false;};
-function roleUrl(room,role){return location.origin+location.pathname+'?room='+encodeURIComponent(room)+'&role='+role;}
+function roleUrl(room,role){return location.origin+location.pathname+'?'+(role==='story'?'s':'c')+room;}
 let qrMadeFor='';
 function toggleQR(force,kind){
   kind=kind||'cheer';
@@ -1566,6 +1566,7 @@ $('#storySend').onclick=async()=>{
 const gate=$('#gate');
 try{const r=localStorage.getItem('classroom-pip-room');if(r)$('#gateInput').value=r;}catch(e){}
 const qs=new URLSearchParams(location.search);
+{const m=location.search.match(/^\?([sc])(\d{2,8})$/); if(m){qs.set('room',m[2]);qs.set('role',m[1]==='s'?'story':'cheer');}}
 if(/^\d{2,8}$/.test(qs.get('room')||'')) $('#gateInput').value=qs.get('room');
 $('#gateForm').addEventListener('submit',e=>{
   e.preventDefault();
