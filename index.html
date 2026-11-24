@@ -125,13 +125,14 @@ body.frame #mainVideo{opacity:0}
   font-family:"Jua","Malgun Gothic",sans-serif;font-size:var(--cap,24px);color:#fff;background:#ff6fa5;padding:.15em .8em .2em;
   border-radius:999px;border:3px solid #fff;box-shadow:0 4px 12px rgba(0,0,0,.35)}
 #capTag:empty{display:none}
-#subTitle{position:absolute;left:-2%;right:-2%;z-index:8;pointer-events:none;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
-  font-family:"Jua","Malgun Gothic",sans-serif;font-size:var(--sub,26px);color:#fff;padding:.18em .8em .24em;letter-spacing:.02em;
-  text-shadow:0 2px 6px rgba(80,0,60,.45);
-  background:linear-gradient(90deg,rgba(255,111,165,0),rgba(255,111,165,.9) 12%,rgba(150,120,255,.9) 88%,rgba(150,120,255,0))}
-#subTitle.top{top:5%}
-#subTitle.bottom{bottom:13%}
-#subTitle.off,#subTitle:empty{display:none}
+#subTitle{position:absolute;z-index:8;pointer-events:none;white-space:nowrap;max-width:92%;overflow:hidden;text-overflow:ellipsis;
+  font-family:"Jua","Malgun Gothic",sans-serif;font-size:var(--sub,16px);line-height:1.2;color:#fff;letter-spacing:.02em;
+  -webkit-text-stroke:.16em #2a1030;paint-order:stroke fill;
+  text-shadow:0 0 .12em #2a1030,0 .06em .18em rgba(0,0,0,.6)}
+#subTitle.tr{top:4%;right:4%;text-align:right}
+#subTitle.top{top:4%;left:50%;transform:translateX(-50%)}
+#subTitle.bottom{bottom:6%;left:50%;transform:translateX(-50%)}
+#subTitle.hide,#subTitle:empty{display:none}
 #deco img{position:absolute;width:var(--s,40px);height:auto;transform:translate(-50%,-50%);animation:bob 2.4s ease-in-out infinite;filter:drop-shadow(0 3px 4px rgba(0,0,0,.35))}
 body.frame #subTitle{display:none}
 #cam.polaroid #camInner{border:solid #fff!important;border-width:calc(var(--s,40px)*.25) calc(var(--s,40px)*.25) calc(var(--s,40px)*1.1)!important;
@@ -321,6 +322,7 @@ body.dragging #dropMask{display:flex}
     <button id="ctrlMode">PIP ↔ 초록 칸</button>
     <button id="ctrlPlay">▶ 영상 재생/멈춤 <kbd>Space</kbd></button>
     <button id="ctrlStoryHide">사연 내리기</button>
+    <button id="ctrlSub">💬 자막 켜기 <kbd>T</kbd></button>
   </div>
 </section>
 <aside id="panel">
@@ -437,7 +439,9 @@ body.dragging #dropMask{display:flex}
     </div>
     <div class="row note" style="margin-bottom:0;margin-top:12px">카메라 자막</div>
     <div class="row"><input type="text" id="subInput" maxlength="40" placeholder="예: 2026 5-6 학급학예회"></div>
-    <div class="seg" id="subPosSeg"><button data-v="top">위에</button><button data-v="bottom">아래에</button><button data-v="off">끄기</button></div>
+    <div class="row"><button id="subToggle">💬 자막 켜기 <kbd>T</kbd></button></div>
+    <div class="seg" id="subPosSeg"><button data-v="tr">오른쪽 위</button><button data-v="top">가운데 위</button><button data-v="bottom">가운데 아래</button></div>
+    <div class="row note">자막은 처음엔 꺼져 있어요. 보여 줄 때 켜세요.</div>
     <div class="row note" style="margin-bottom:0;margin-top:12px">이름표</div>
     <div class="row"><input type="text" id="capInput" placeholder="이름표 (예: 오늘의 주인공 ⭐)"></div>
     <p class="note">이름표는 비워 두면 안 보여요. 엔터 없이 바로 바뀌어요.</p>
@@ -483,6 +487,7 @@ body.dragging #dropMask{display:flex}
       <kbd>P</kbd><span>카메라 창 보이기 / 숨기기</span>
       <kbd>R</kbd><span>카메라 화면 90° 돌리기</span>
       <kbd>Q</kbd><span>응원 QR 띄우기 / 닫기</span>
+      <kbd>T</kbd><span>카메라 자막 켜기 / 끄기</span>
       <kbd>+ −</kbd><span>카메라 확대 / 축소 (휠도 돼요)</span>
       <kbd>1~8</kbd><span>필터 바꾸기 (0 = 없음)</span>
       <kbd>H</kbd><span>설정 패널 숨기기 / 보이기</span>
@@ -559,11 +564,14 @@ function renderDeco(){
 const DEF={x:0.70,y:0.62,w:0.26,shape:'round',mirror:false,border:true,pipOn:true,mode:'pip',
   chroma:false,key:'#00ff00',sim:0.14,soft:0.08,loop:false,vol:1,src:'room',url:'',deviceId:'',room:'',
   zoom:1,rot:0,panX:0,panY:0,aspect:'auto',filter:'none',deco:'none',caption:'',ar:'none',
-  sub:'2026 5-6 학급학예회',subPos:'bottom',stageAspect:'16:9',chatOn:true,reactOn:true,
+  sub:'2026 5-6 학급학예회',subPos:'tr',stageAspect:'16:9',chatOn:true,reactOn:true,
   autoStory:false,storyDur:'20',blocked:[],airStart:0};
 DEF.aspect='16:9';
 let S=Object.assign({},DEF);
 try{const raw=localStorage.getItem('classroom-pip');if(raw)Object.assign(S,JSON.parse(raw));}catch(e){}
+if(!S.subV2){S.subPos='tr';S.subV2=1;}  // 예전 큰 자막(아래·띠) 설정은 오른쪽 위 작은 글씨로 바꿈
+if(!['tr','top','bottom'].includes(S.subPos)) S.subPos='tr';
+let subOn=false;  // 자막은 켤 때마다 꺼진 채로 시작 (선생님이 켜야 보임)
 function save(){try{localStorage.setItem('classroom-pip',JSON.stringify(S));}catch(e){}}
 
 function status(msg,warn){const el=$('#status');el.textContent=msg;el.classList.toggle('warn',!!warn);}
@@ -728,7 +736,7 @@ function applyMedia(){
   const w=cam.clientWidth||300;
   cam.style.setProperty('--s',Math.max(22,w*0.16)+'px');
   cam.style.setProperty('--cap',Math.max(14,w*0.075)+'px');
-  cam.style.setProperty('--sub',Math.max(15,Math.min(w*0.065,64))+'px');
+  cam.style.setProperty('--sub',Math.max(12,Math.min(w*0.038,34))+'px');
 }
 function layout(){
   const W=stage.clientWidth,H=stage.clientHeight;
@@ -777,7 +785,8 @@ function applyAll(){
   camMedia.style.filter=F.f; tint.style.background=F.t;
   cam.classList.toggle('polaroid',S.deco==='polaroid');
   renderDeco(); capTag.textContent=S.caption;
-  const st=$('#subTitle'); st.textContent=S.sub; st.className=S.subPos; setSeg('#subPosSeg',S.subPos);
+  const st=$('#subTitle'); st.textContent=S.sub; st.className=S.subPos+(subOn?'':' hide'); setSeg('#subPosSeg',S.subPos);
+  ['#subToggle','#ctrlSub'].forEach(q=>{const b=$(q); if(b){b.innerHTML=(subOn?'💬 자막 끄기':'💬 자막 켜기')+' <kbd>T</kbd>'; b.classList.toggle('primary',subOn);}});
   $('#rotLabel').textContent=S.rot+'°';
   const keyCam=!frame&&S.chroma&&!remote&&glOk;
   cam.classList.toggle('keyed',keyCam);
@@ -834,6 +843,10 @@ segHandler('#aspectSeg','aspect');
 segHandler('#filterSeg','filter');segHandler('#filterSeg2','filter');
 segHandler('#decoSeg','deco');segHandler('#decoSeg2','deco');
 segHandler('#subPosSeg','subPos');
+function toggleSub(){ subOn=!subOn; applyAll();
+  if(subOn&&(S.mode==='frame'||cam.classList.contains('off'))) status('💬 자막을 켰어요. 자막은 카메라 PIP 창이 보일 때만 나와요.',true);
+  else status(subOn?'💬 자막을 켰어요.':'자막을 껐어요.'); }
+$('#subToggle').onclick=toggleSub; $('#ctrlSub').onclick=toggleSub;
 segHandler('#stageSeg','stageAspect');
 segHandler('#storyDurSeg','storyDur');
 ['#arSeg1','#arSeg2','#arSeg3','#arSeg4','#arSeg5','#arSeg6'].forEach(id=>segHandler(id,'ar',()=>{
@@ -879,11 +892,12 @@ function toggleFS(d){
   if(d.fullscreenElement) d.exitFullscreen();
   else d.documentElement.requestFullscreen().catch(()=>status('전체 화면이 안 돼요. 방송 화면 창을 한 번 누르고 F를 눌러 보세요.',true));
 }
-$('#hideBtn').onclick=togglePanel; $('#showBtn').onclick=togglePanel; $('#fsBtn').onclick=()=>toggleFS(document);
+$('#hideBtn').onclick=togglePanel; $('#showBtn').onclick=togglePanel; $('#fsBtn').onclick=()=>{ if(stage.ownerDocument!==document){ status('방송 화면 창을 한 번 누른 뒤 F를 누르세요.'); try{outWin.focus();}catch(e){} } else toggleFS(document); };
 function onKey(e){
   if(document.getElementById('gate')||document.body.classList.contains('sending')) return;
   const tag=(e.target.tagName||'').toLowerCase();
-  if(tag==='input'&&e.target.type==='text') return;
+  if(tag==='textarea'||tag==='select'||(tag==='input'&&(e.target.type==='text'||e.target.type==='number'))) return;
+  if(tag==='input'&&/^Arrow/.test(e.key)) return;  // 슬라이더를 화살표로 움직일 때 영상이 넘어가지 않게
   if(e.ctrlKey||e.metaKey||e.altKey) return;
   const k=e.key.toLowerCase();
   if(e.code==='Space'){e.preventDefault();togglePlay();}
@@ -892,6 +906,7 @@ function onKey(e){
   else if(k==='p'||k==='ㅔ'){S.pipOn=!S.pipOn;$('#pipChk').checked=S.pipOn;save();applyAll();}
   else if(k==='r'||k==='ㄱ'){rotate(90);}
   else if(k==='q'||k==='ㅂ'){toggleQR();}
+  else if(k==='t'||k==='ㅅ'){toggleSub();}
   else if(e.key==='+'||e.key==='='){setZoom(S.zoom*1.1);}
   else if(e.key==='-'||e.key==='_'){setZoom(S.zoom/1.1);}
   else if(/^[0-8]$/.test(e.key)&&tag!=='input'){S.filter=e.key==='0'?'none':FILTER_KEYS[+e.key]||'none';save();applyAll();}
@@ -1184,18 +1199,24 @@ async function startScreen(room){
   $('#roomLabel').textContent=room;
   if(typeof Peer==='undefined'){status('연결 도구를 못 불러왔어요. 인터넷을 확인하세요. (💻 내 카메라는 쓸 수 있어요)',true);return;}
   hPeer=new Peer(screenId(room),await peerOpts());
-  hPeer.on('open',()=>{idTries=0;status('방 '+room+'을 열었어요. 폰에서 같은 번호로 "📱 카메라 보내기"를 누르세요.');});
+  hPeer.on('open',()=>{idTries=0;hPeer.__open=1;status('방 '+room+'을 열었어요. 폰에서 같은 번호로 "📱 카메라 보내기"를 누르세요.');});
   hPeer.on('call',call=>{
     if(kicked.has(call.peer)){ try{call.close();}catch(e){} return; }
     call.answer();
     const slow=setTimeout(()=>{ const pc=call.peerConnection; if(pc&&pc.connectionState!=='connected') status('📱 폰이 들어왔는데 화면이 아직 안 와요. '+SLOW_TIP,true); },15000);
+    let shown=false;
     call.on('stream',st=>{
-      const pc0=call.peerConnection; if(pc0) pc0.addEventListener('connectionstatechange',()=>{ if(pc0.connectionState==='connected') clearTimeout(slow); });
-      const name=(call.metadata&&call.metadata.name)||'';
-      const prev=phones.get(call.peer);
-      phones.set(call.peer,{call,stream:st,name,sound:prev?prev.sound:false}); renderPhones();
-      if(S.src==='room'&&(!activePhone||activePhone===call.peer||!phones.has(activePhone))) usePhone(call.peer);
-      else status('📱 '+(name||'폰')+'이 들어왔어요. ② 목록에서 고르면 떠요.');
+      const pc0=call.peerConnection;
+      // 실제로 영상이 오기 시작한 뒤에만 '폰 화면을 띄웠어요'로 바꿈 (그 전엔 검은 화면만 보임)
+      const go=()=>{ if(shown||(pc0&&pc0.connectionState&&pc0.connectionState!=='connected')) return; shown=true; clearTimeout(slow);
+        const name=(call.metadata&&call.metadata.name)||'';
+        const prev=phones.get(call.peer);
+        phones.set(call.peer,{call,stream:st,name,sound:prev?prev.sound:false}); renderPhones();
+        if(S.src==='room'&&(!activePhone||activePhone===call.peer||!phones.has(activePhone))) usePhone(call.peer);
+        else status('📱 '+(name||'폰')+'이 들어왔어요. ② 목록에서 고르면 떠요.'); };
+      if(pc0&&!call.__w){ call.__w=1; pc0.addEventListener('connectionstatechange',go); }
+      if(!shown&&pc0&&pc0.connectionState!=='connected') status('📱 폰이 들어왔어요. 화면을 이어 붙이는 중…');
+      go();
     });
     call.on('close',()=>dropPhone(call.peer,call));
     call.on('error',()=>dropPhone(call.peer,call));
@@ -1204,6 +1225,7 @@ async function startScreen(room){
   });
   hPeer.on('error',e=>{
     if(e.type==='unavailable-id'){
+      if(hPeer.__open){ setTimeout(()=>{ if(hPeer&&!hPeer.destroyed){try{hPeer.reconnect();}catch(_){}} },4000); return; }  // 이미 열려 있던 방: 폰 연결은 그대로 두고 다시 붙기만
       hPeer.destroy();
       if(++idTries<=6){status('방을 여는 중… 잠시만요.');setTimeout(()=>startScreen(room),4000);}
       else status('이 방 번호에는 이미 다른 화면이 열려 있어요. 다른 번호를 쓰거나 그 화면을 닫으세요.',true);
@@ -1238,17 +1260,19 @@ async function sGetCam(){
     return false;
   }
 }
+let sMakePeer=null, sKicked=false;
 function retryLater(){clearTimeout(sRetry);sRetry=setTimeout(sCallScreen,3000);}
 function sCallScreen(){
   clearTimeout(sRetry);
-  if(!sPeer||sPeer.destroyed||!sStream) return;
+  if(!sStream) return;
+  if(!sPeer||sPeer.destroyed){ if(!sKicked&&sMakePeer) sMakePeer(); return; }
   if(!sPeer.open){retryLater();return;}
   if(sCall){const old=sCall;sCall=null;try{old.close();}catch(e){}}
   const call=sPeer.call(screenId(sRoom),sStream,{metadata:{name:$('#sendName').value.trim()}});
   if(!call){retryLater();return;}
   sCall=call; sStatus('화면에 연결하는 중…');
   const pc=call.peerConnection;
-  setTimeout(()=>{ if(sCall===call&&pc&&pc.connectionState!=='connected') sStatus('아직 연결 중이에요. '+SLOW_TIP,'warn'); },15000);
+  setTimeout(()=>{ if(sCall===call&&pc&&pc.connectionState!=='connected'){ sStatus('아직 연결 중이에요. '+SLOW_TIP,'warn'); retryLater(); } },20000);
   const chk=()=>{ if(sCall!==call) return; const s=pc.connectionState||pc.iceConnectionState;
     if(s==='connected'||s==='completed') sStatus('✅ 화면에 연결됐어요! 이 폰을 세워 두세요.','ok');
     else if(s==='failed'||s==='disconnected'||s==='closed'){sStatus('연결이 끊겼어요. 다시 연결하는 중…','warn');retryLater();} };
@@ -1276,25 +1300,32 @@ async function beginSend(room){
   sStatus('화면을 찾는 중…');
   chatListen(room,m=>{
     if(m&&m.k==='kickcam'&&sPeer&&m.pid===sPeer.id){
-      clearTimeout(sRetry); const p=sPeer; sPeer=null; try{p.destroy();}catch(e){}
+      clearTimeout(sRetry); sKicked=true; const p=sPeer; sPeer=null; try{p.destroy();}catch(e){}
       if(sStream) sStream.getTracks().forEach(t=>t.stop());
       sStatus('선생님이 이 폰의 연결을 끊었어요. 다시 보내려면 "나가기"를 누르고 다시 들어오세요.','warn');
     }
   });
-  sPeer=new Peer(await peerOpts());
-  sPeer.on('open',sCallScreen);
-  sPeer.on('error',e=>{
-    if(e.type==='peer-unavailable'){sStatus('노트북 쪽이 아직 없어요. 노트북에서 방 '+room+' → "🖥️ 화면 띄우기"를 누르세요. (자동으로 계속 찾아요)','warn');retryLater();}
-    else if(NETERR.includes(e.type)){sStatus('인터넷 연결을 확인하세요. 다시 시도하는 중…','warn');retryLater();}
-  });
-  sPeer.on('disconnected',()=>setTimeout(()=>{ if(sPeer&&!sPeer.destroyed){try{sPeer.reconnect();}catch(e){}} },2000));
+  const opts=await peerOpts();
+  sMakePeer=()=>{
+    const P=new Peer(opts); sPeer=P;
+    // 신호 서버에 다시 붙을 때마다 멀쩡한 통화를 끊지 않도록: 연결돼 있지 않을 때만 새로 건다
+    P.on('open',()=>{ const st=sCall&&sCall.peerConnection&&sCall.peerConnection.connectionState; if(st!=='connected'&&st!=='connecting') sCallScreen(); });
+    P.on('error',e=>{
+      if(e.type==='peer-unavailable'){sStatus('노트북 쪽이 아직 없어요. 노트북에서 방 '+room+' → "🖥️ 화면 띄우기"를 누르세요. (자동으로 계속 찾아요)','warn');retryLater();}
+      else if(NETERR.includes(e.type)){sStatus('인터넷 연결을 확인하세요. 다시 시도하는 중…','warn');retryLater();}
+      else {sStatus('연결 오류('+e.type+'). 다시 시도하는 중…','warn');retryLater();}
+    });
+    P.on('disconnected',()=>setTimeout(()=>{ if(sPeer===P&&!P.destroyed){try{P.reconnect();}catch(e){}} },2000));
+  };
+  sMakePeer();
   keepAwake(); document.addEventListener('visibilitychange',()=>{ if(document.visibilityState==='visible') keepAwake(); });
 }
 $('#flipBtn').onclick=async()=>{
   const prev=facing; facing=facing==='environment'?'user':'environment';
   if(!(await sGetCam())){facing=prev;await sGetCam();sStatus('다른 쪽 카메라를 못 켰어요. 원래 카메라로 계속 보내요.','warn');}
 };
-$('#sendName').onchange=e=>{try{localStorage.setItem('classroom-pip-name',e.target.value.trim());}catch(err){} sCallScreen();};
+$('#sendName').onchange=e=>{try{localStorage.setItem('classroom-pip-name',e.target.value.trim());}catch(err){}
+  const st=sCall&&sCall.peerConnection&&sCall.peerConnection.connectionState; if(st!=='connected') sCallScreen(); else sStatus('이름은 다음에 연결할 때 바뀌어요.','ok');};
 $('#sendExit').onclick=()=>location.reload();
 
 /* ---------- 응원 댓글 (ntfy.sh 무료 공개 알림 서버로 주고받음) ---------- */
@@ -1319,7 +1350,8 @@ function chatListen(room,onMsg,onState,since){
   const es=new EventSource(NTFY+chatTopic(room)+'/sse'+(since?'?since='+since:''));
   es.onopen=()=>onState&&onState(true);
   es.onerror=()=>onState&&onState(false);
-  es.onmessage=e=>{ try{ const d=JSON.parse(e.data); if(d.event!=='message') return; onMsg(JSON.parse(decodeURIComponent(d.message)),(d.time||0)*1000); }catch(err){} };
+  const seen=new Set();
+  es.onmessage=e=>{ try{ const d=JSON.parse(e.data); if(d.event!=='message') return; if(d.id){ if(seen.has(d.id)) return; seen.add(d.id); } onMsg(JSON.parse(decodeURIComponent(d.message)),(d.time||0)*1000); }catch(err){} };
   return es;
 }
 const hms=ms=>{ms=Math.max(0,ms|0);const s=Math.floor(ms/1000);return [Math.floor(s/3600),Math.floor(s/60)%60,s%60].map(x=>String(x).padStart(2,'0')).join(':');};
@@ -1568,6 +1600,10 @@ try{const r=localStorage.getItem('classroom-pip-room');if(r)$('#gateInput').valu
 const qs=new URLSearchParams(location.search);
 {const m=location.search.match(/^\?([sc])(\d{2,8})$/); if(m){qs.set('room',m[2]);qs.set('role',m[1]==='s'?'story':'cheer');}}
 if(/^\d{2,8}$/.test(qs.get('room')||'')) $('#gateInput').value=qs.get('room');
+// 폰 키보드의 '이동/Enter'로 들어가면 '화면 띄우기'가 돼 버림 → 폰에서는 버튼을 누르게 함
+$('#gateInput').addEventListener('keydown',e=>{
+  if(e.key==='Enter'&&matchMedia('(pointer:coarse)').matches){ e.preventDefault(); e.target.blur(); $('#gateMsg').textContent='아래 버튼 중 하나를 눌러 주세요. (폰은 📱 카메라 보내기)'; }
+});
 $('#gateForm').addEventListener('submit',e=>{
   e.preventDefault();
   const v=$('#gateInput').value.trim();
@@ -1621,6 +1657,12 @@ function syncOut(){
   ['frame','chatOff','reactOff'].forEach(c=>b.classList.toggle(c,document.body.classList.contains(c)));
   b.classList.add('clean');
 }
+// 창을 옮길 때 영상이 처음부터 다시 시작하지 않도록 재생 위치를 되살림
+function keepTime(t,paused){
+  if(!(mainVideo.currentSrc||mainVideo.src)) return;
+  const fix=()=>{ try{ if(Math.abs(mainVideo.currentTime-t)>0.5) mainVideo.currentTime=t; }catch(e){} if(!paused) mainVideo.play().catch(()=>{}); };
+  if(mainVideo.readyState>=1) fix(); mainVideo.addEventListener('loadedmetadata',fix,{once:true});
+}
 function openOut(){
   if(outWin&&!outWin.closed){outWin.focus();return;}
   const w=window.open('','cpip-out','popup=yes,width=1280,height=760');
@@ -1630,7 +1672,11 @@ function openOut(){
   document.querySelectorAll('head style, head link[rel=stylesheet]').forEach(n=>d.head.appendChild(d.importNode(n,true)));
   const st=d.createElement('style'); st.textContent='html,body{background:#000;margin:0;overflow:hidden}body.idle{cursor:none}'; d.head.appendChild(st);
   outWin=w;
-  d.body.appendChild(stage);   // 방송 화면(영상·카메라·필터·댓글)을 통째로 새 창으로 옮김
+  const vt=mainVideo.currentTime, vp=mainVideo.paused;
+  d.body.appendChild(stage);
+  keepTime(vt,vp);
+  w.addEventListener('dragover',e=>e.preventDefault());
+  w.addEventListener('drop',e=>{e.preventDefault();const f=e.dataTransfer&&e.dataTransfer.files[0];if(f)openVideo(f);});   // 방송 화면(영상·카메라·필터·댓글)을 통째로 새 창으로 옮김
   [mainVideo,camVideo].forEach(v=>{ if(v.srcObject||v.currentSrc) v.play().catch(()=>{}); });
   w.addEventListener('resize',()=>{fitStage();layout();});
   w.addEventListener('keydown',onKey);
@@ -1642,7 +1688,9 @@ function openOut(){
 }
 function closeOut(){
   const w=outWin; if(!w) return; outWin=null;
+  const vt=mainVideo.currentTime, vp=mainVideo.paused;
   try{ if(stage.ownerDocument!==document) document.body.insertBefore(stage,document.body.firstChild); }catch(e){}
+  keepTime(vt,vp);
   [mainVideo,camVideo].forEach(v=>{ if(v.srcObject||v.currentSrc) v.play().catch(()=>{}); });
   document.body.classList.remove('outOpen');
   try{ if(!w.closed) w.close(); }catch(e){}
