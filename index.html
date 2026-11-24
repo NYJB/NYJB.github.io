@@ -352,6 +352,14 @@ body.dragging #dropMask{display:flex}
       <div class="row"><button id="phoneShow">👁 화면 끄기</button><button id="phoneSound">🔇 소리 꺼짐</button><button id="phoneKick">🚫 내보내기</button></div>
       <p class="note">서브폰에서 이 주소를 열고 <b>같은 방 번호</b> → <b>📱 카메라 보내기</b>를 누르면 여기에 떠요. 폰이 여러 대면 위 목록에서 골라요.</p>
       <div class="row"><button id="leaveRoom">방 나가기</button></div>
+      <details id="turnBox"><summary>🛰 중계 서버 (폰이 다른 인터넷일 때)</summary>
+        <p class="note">폰이 LTE나 다른 와이파이에 있으면 중계 서버가 있어야 연결돼요. 무료 중계 서버에 가입하고 받은 정보를 넣으세요.<br>
+        · ExpressTURN: <b>서버 주소 아이디 비밀번호</b>를 띄어 써서 한 줄로 (예: <code>relay1.expressturn.com:3478 아이디 비번</code>)<br>
+        · Metered: 대시보드의 <b>…/api/v1/turn/credentials?apiKey=…</b> 주소를 그대로</p>
+        <div class="row"><input type="text" id="turnInput" placeholder="서버 주소 아이디 비밀번호  또는  https://….metered.live/api/v1/turn/credentials?apiKey=…" autocomplete="off"></div>
+        <div class="row"><button class="primary" id="turnSave">저장하고 다시 연결</button><button id="turnTest">🔌 연결 확인</button><button id="turnClear">지우기</button></div>
+        <p class="note" id="turnState">이 컴퓨터에만 저장돼요. 폰 쪽은 따로 넣을 필요 없어요.</p>
+      </details>
     </div>
     <div id="localBox">
       <p class="note">이 컴퓨터의 카메라(노트북 카메라, DroidCam 등)를 써요. 처음엔 카메라 허용 창이 떠요.</p>
@@ -1113,21 +1121,44 @@ function drawFace(lm,bs,w,h,dt,i){
 /* ---------- 방 번호로 폰 ↔ 화면 연결 (PeerJS + 무료 공개 중계 서버) ---------- */
 const PREFIX='classroom-pip-v1-', screenId=r=>PREFIX+r+'-screen';
 const NETERR=['network','server-error','socket-error','socket-closed'];
-/* 중계 서버: PeerJS 기본 TURN은 없어져서, Metered Open Relay의 공개 static-auth 키로 임시 자격을 만든다 */
-let iceCache=null;
+/* 중계 서버: PeerJS 기본 TURN과 Metered Open Relay는 문을 닫았다(2026-11 확인).
+   선생님이 가입한 TURN 정보를 이 컴퓨터(화면 쪽)에 저장해 쓴다. 한쪽만 중계 서버가 있어도 대부분 연결된다. */
+const TURN_KEY='classroom-pip-turn';
+function turnGet(){ try{return localStorage.getItem(TURN_KEY)||'';}catch(e){return '';} }
+async function turnServers(raw){
+  raw=(raw||'').trim(); if(!raw) return [];
+  if(/^https?:\/\//i.test(raw)){
+    const ctl=new AbortController(); const t=setTimeout(()=>ctl.abort(),8000);
+    try{ const r=await fetch(raw,{signal:ctl.signal}); if(!r.ok) throw new Error('HTTP '+r.status);
+      const j=await r.json(); const list=Array.isArray(j)?j:(j.iceServers||[]);
+      if(!list.length) throw new Error('빈 응답'); return list; } finally{clearTimeout(t);}
+  }
+  if(raw[0]==='['||raw[0]==='{'){ const j=JSON.parse(raw); return Array.isArray(j)?j:(j.iceServers||[j]); }
+  const [h,username,credential]=raw.split(/\s+/);
+  if(!h||!username||!credential) throw new Error('서버 주소, 아이디, 비밀번호 세 가지를 띄어 써 주세요');
+  let host=h.replace(/^turns?:/i,'').replace(/\?.*$/,''); if(!/:\d+$/.test(host)) host+=':3478';
+  return [{urls:['turn:'+host,'turn:'+host+'?transport=tcp'],username,credential}];
+}
+let iceCache=null, turnErr='';
 async function peerOpts(){
   if(iceCache) return iceCache;
-  const ice=[{urls:'stun:stun.l.google.com:19302'},{urls:'stun:stun.relay.metered.ca:80'}];
-  try{
-    const user=(Math.floor(Date.now()/1000)+12*3600)+':classroom-pip';
-    const enc=new TextEncoder();
-    const key=await crypto.subtle.importKey('raw',enc.encode('openrelayprojectsecret'),{name:'HMAC',hash:'SHA-1'},false,['sign']);
-    const sig=await crypto.subtle.sign('HMAC',key,enc.encode(user));
-    ice.push({urls:['turn:staticauth.openrelay.metered.ca:80','turn:staticauth.openrelay.metered.ca:80?transport=tcp',
-      'turn:staticauth.openrelay.metered.ca:443','turns:staticauth.openrelay.metered.ca:443?transport=tcp'],
-      username:user,credential:btoa(String.fromCharCode(...new Uint8Array(sig)))});
-  }catch(e){}
+  const ice=[{urls:'stun:stun.l.google.com:19302'},{urls:'stun:stun.cloudflare.com:3478'}];
+  turnErr='';
+  try{ ice.push(...await turnServers(turnGet())); }catch(e){ turnErr=String(e.message||e); }
   return iceCache={config:{iceServers:ice}};
+}
+/* 중계 서버가 진짜 되는지: 중계 후보(relay)만 모아 본다 */
+async function turnProbe(raw){
+  const servers=(await turnServers(raw)).filter(s=>[].concat(s.urls).some(u=>/^turns?:/i.test(u)));
+  if(!servers.length) throw new Error('중계 서버(turn:) 주소가 없어요');
+  const pc=new RTCPeerConnection({iceServers:servers,iceTransportPolicy:'relay'});
+  pc.createDataChannel('t');
+  return await new Promise(res=>{
+    const done=ok=>{ try{pc.close();}catch(e){} res(ok); };
+    const t=setTimeout(()=>done(false),9000);
+    pc.onicecandidate=e=>{ if(e.candidate&&/ typ relay/.test(e.candidate.candidate)){clearTimeout(t);done(true);} };
+    pc.createOffer().then(o=>pc.setLocalDescription(o)).catch(()=>{clearTimeout(t);done(false);});
+  });
 }
 const SLOW_TIP='연결이 오래 걸리면: 폰을 노트북 핫스팟(또는 같은 와이파이)에 붙이거나, ② 에서 VDO.Ninja로 연결하세요.';
 const phones=new Map();
@@ -1232,7 +1263,35 @@ async function startScreen(room){
     } else if(NETERR.includes(e.type)) status('연결 서버에 닿지 않아요. 인터넷을 확인하세요. 다시 시도하는 중…',true);
   });
   hPeer.on('disconnected',()=>setTimeout(()=>{ if(hPeer&&!hPeer.destroyed){try{hPeer.reconnect();}catch(e){}} },2000));
+  turnShow();
 }
+/* 중계 서버 칸 */
+function turnShow(msg,bad){
+  const el=$('#turnState'); if(!el) return;
+  if(msg){el.textContent=msg;el.style.color=bad?'#ff8a8a':'';return;}
+  const has=!!turnGet();
+  el.style.color=turnErr?'#ff8a8a':'';
+  el.textContent=turnErr?'⚠ 중계 서버 정보를 못 읽었어요: '+turnErr
+    :has?'중계 서버 정보가 저장돼 있어요(이 컴퓨터에만). 🔌 연결 확인으로 되는지 볼 수 있어요. 폰 쪽은 따로 넣을 필요 없어요.'
+    :'아직 중계 서버가 없어요. 폰과 노트북을 같은 와이파이(노트북 핫스팟)에 붙여야 연결돼요.';
+}
+{ const v=turnGet(); $('#turnInput').value=v; if(v) $('#turnBox').open=false; turnShow(); }
+$('#turnSave').onclick=()=>{
+  const v=$('#turnInput').value.trim();
+  try{ v?localStorage.setItem(TURN_KEY,v):localStorage.removeItem(TURN_KEY); }catch(e){ turnShow('이 브라우저에 저장을 못 했어요.',true); return; }
+  iceCache=null;
+  const room=$('#roomLabel').textContent;
+  if(hPeer&&/^\d+$/.test(room)){ try{hPeer.destroy();}catch(e){} hPeer=null; idTries=0; turnShow('저장했어요. 방을 다시 여는 중… 폰은 잠시 뒤 저절로 다시 붙어요.'); setTimeout(()=>startScreen(room),1500); }
+  else turnShow('저장했어요.');
+};
+$('#turnTest').onclick=async()=>{
+  const v=$('#turnInput').value.trim(); if(!v){turnShow('먼저 중계 서버 정보를 넣으세요.',true);return;}
+  turnShow('확인하는 중… (최대 10초)');
+  try{ const ok=await turnProbe(v);
+    turnShow(ok?'✅ 중계 서버에 닿았어요. "저장하고 다시 연결"을 누르세요.':'❌ 중계 서버에 닿지 않아요. 주소·아이디·비밀번호를 다시 보세요. (학교 인터넷이 막았을 수도 있어요)',!ok);
+  }catch(e){ turnShow('❌ '+(e.message||e),true); }
+};
+$('#turnClear').onclick=()=>{ $('#turnInput').value=''; $('#turnSave').onclick(); };
 
 /* 폰 쪽: 카메라 보내기 */
 let sPeer=null,sStream=null,sCall=null,sRoom='',facing='environment',sRetry=null;
