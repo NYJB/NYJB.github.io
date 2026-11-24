@@ -9,7 +9,46 @@
 :root{--panel:#16181d;--line:#2c3038;--text:#e9ecf1;--muted:#9aa3b2;--accent:#4f8cff;--warn:#ffb454}
 *{box-sizing:border-box}
 html,body{margin:0;height:100%;background:#000;color:var(--text);font-family:"Pretendard","Malgun Gothic",system-ui,sans-serif;overflow:hidden}
-#stage{position:fixed;inset:0;background:#000}
+#stage{position:fixed;left:0;top:0;width:100vw;height:100vh;background:#000;overflow:hidden;container-type:size}
+#chatLayer{position:absolute;inset:0;pointer-events:none;z-index:12;overflow:hidden}
+#chatList{position:absolute;left:2%;bottom:4%;width:42%;display:flex;flex-direction:column;gap:.4em;align-items:flex-start;font-size:var(--chat,18px)}
+.chat{background:rgba(0,0,0,.58);color:#fff;border-radius:1em;padding:.35em .8em;line-height:1.35;max-width:100%;word-break:keep-all;overflow-wrap:anywhere;
+  animation:chatIn .35s ease-out;box-shadow:0 2px 10px rgba(0,0,0,.25);transition:opacity .6s,transform .6s}
+.chat b{color:#ffd54a;margin-right:.4em;font-weight:700}
+.chat.bye{opacity:0;transform:translateY(-.6em)}
+@keyframes chatIn{from{opacity:0;transform:translateX(-1em)}to{opacity:1;transform:none}}
+.react{position:absolute;bottom:2%;width:calc(var(--chat,18px)*2.4);animation:floatUp 3.2s ease-out forwards;font-size:calc(var(--chat,18px)*2);line-height:1}
+.react img{width:100%;display:block;filter:drop-shadow(0 3px 5px rgba(0,0,0,.35))}
+@keyframes floatUp{0%{transform:translate(0,0) scale(.5);opacity:0}12%{opacity:1;transform:translate(calc(var(--dx)*.2),-6cqh) scale(1.15)}
+  100%{transform:translate(var(--dx),-62cqh) scale(.9);opacity:0}}
+#starPop{position:absolute;left:50%;top:9%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:.5em;font-size:var(--chat,18px)}
+.starCard{display:flex;align-items:center;gap:.6em;padding:.45em 1.3em .45em .6em;border-radius:999px;color:#5a2d00;
+  background:linear-gradient(135deg,#fff3a8,#ffd23f 55%,#ffb347);box-shadow:0 8px 30px rgba(255,190,40,.55),0 0 0 3px #fff inset;
+  font-family:"Jua","Malgun Gothic",sans-serif;font-size:1.5em;white-space:nowrap;animation:starIn 4.2s ease-in-out forwards}
+.starCard img{width:2.2em;animation:spin 1.2s ease-in-out infinite alternate}
+.starCard small{display:block;font-size:.7em;color:#7a4300;max-width:20em;white-space:normal}
+@keyframes starIn{0%{opacity:0;transform:scale(.3) translateY(-1em)}10%{opacity:1;transform:scale(1.12)}16%{transform:scale(1)}85%{opacity:1;transform:scale(1)}100%{opacity:0;transform:scale(.9) translateY(-.5em)}}
+@keyframes spin{from{transform:rotate(-15deg) scale(1)}to{transform:rotate(15deg) scale(1.15)}}
+body.chatOff #chatList,body.reactOff .react,body.reactOff #starPop{display:none}
+#qrBox{position:absolute;inset:0;z-index:14;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.55);pointer-events:auto;cursor:pointer}
+#qrBox.hide{display:none}
+#qrCard{background:#fff;color:#222;border-radius:24px;padding:3cqh 3cqh 2.4cqh;text-align:center;font-family:"Jua","Malgun Gothic",sans-serif;box-shadow:0 20px 60px rgba(0,0,0,.5)}
+#qrCode{width:min(46cqh,46cqw);height:min(46cqh,46cqw);margin:0 auto}
+#qrCode img,#qrCode canvas{width:100%!important;height:100%!important;image-rendering:pixelated}
+#qrTitle{font-size:min(5cqh,5cqw);margin-bottom:1.6cqh}
+#qrUrl{font-family:system-ui,sans-serif;font-size:min(1.8cqh,2cqw);color:#666;margin-top:1.4cqh}
+#cheer{position:fixed;inset:0;z-index:90;background:linear-gradient(180deg,#2a2350,#120f1f);display:flex;flex-direction:column;padding:16px 16px max(16px,env(safe-area-inset-bottom));gap:10px}
+#cheer.hide{display:none}
+#cheerRoom{font-family:"Jua","Malgun Gothic",sans-serif;font-size:26px}
+#cheerFeed{flex:1;overflow:auto;display:flex;flex-direction:column;gap:6px;padding:8px;border-radius:14px;background:rgba(255,255,255,.06)}
+#cheerFeed .chat{font-size:15px;animation:none}
+.cheerQuick{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.cheerQuick button{padding:12px 2px;font-size:15px}
+.cheerQuick .star{background:linear-gradient(135deg,#fff3a8,#ffc83d);color:#5a2d00;border-color:#ffc83d}
+#cheerForm{display:flex;gap:8px}
+#cheerForm input{flex:1}
+#cheer input{font-size:16px}
+#gate #roleBtns .cheerBtn{grid-column:1 / -1;background:linear-gradient(135deg,#ff6fa5,#9b78ff);border:0;color:#fff}
 #hint{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;text-align:center;color:#8a92a0;font-size:22px;line-height:1.6;z-index:0;padding:24px}
 #mainVideo,#mainCanvas{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;z-index:2}
 #mainCanvas{display:none;pointer-events:none}
@@ -34,6 +73,15 @@ body.frame #mainVideo{opacity:0}
   font-family:"Jua","Malgun Gothic",sans-serif;font-size:var(--cap,24px);color:#fff;background:#ff6fa5;padding:.15em .8em .2em;
   border-radius:999px;border:3px solid #fff;box-shadow:0 4px 12px rgba(0,0,0,.35)}
 #capTag:empty{display:none}
+#subTitle{position:absolute;left:-2%;right:-2%;z-index:8;pointer-events:none;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  font-family:"Jua","Malgun Gothic",sans-serif;font-size:var(--sub,26px);color:#fff;padding:.18em .8em .24em;letter-spacing:.02em;
+  text-shadow:0 2px 6px rgba(80,0,60,.45);
+  background:linear-gradient(90deg,rgba(255,111,165,0),rgba(255,111,165,.9) 12%,rgba(150,120,255,.9) 88%,rgba(150,120,255,0))}
+#subTitle.top{top:5%}
+#subTitle.bottom{bottom:13%}
+#subTitle.off,#subTitle:empty{display:none}
+#deco img{position:absolute;width:var(--s,40px);height:auto;transform:translate(-50%,-50%);animation:bob 2.4s ease-in-out infinite;filter:drop-shadow(0 3px 4px rgba(0,0,0,.35))}
+body.frame #subTitle{display:none}
 #cam.polaroid #camInner{border:solid #fff!important;border-width:calc(var(--s,40px)*.25) calc(var(--s,40px)*.25) calc(var(--s,40px)*1.1)!important;
   border-radius:4px!important;box-shadow:0 10px 30px rgba(0,0,0,.5)!important;background:#fff}
 #cam.polaroid #capTag{background:transparent;border:0;box-shadow:none;color:#444;bottom:calc(var(--s,40px)*.55);transform:translate(-50%,50%)}
@@ -88,7 +136,22 @@ body.clean.idle #showBtn{opacity:0;pointer-events:none}
 #gate h2{margin:0 0 6px;font-family:"Jua","Malgun Gothic",sans-serif;font-size:28px;font-weight:400}
 #gate p{margin:0 0 18px;color:var(--muted);font-size:14px}
 #gate input{font:inherit;font-size:30px;letter-spacing:.4em;text-align:center;width:100%;padding:10px 0 10px .4em;border-radius:12px;border:1px solid #3a3650;background:#0c0b12;color:#fff}
-#gate button{margin-top:14px;width:100%;padding:11px;font-size:16px}
+#gate input::placeholder{color:#4a4660;letter-spacing:.1em}
+#roleBtns{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}
+#gate #roleBtns button{margin:0;padding:12px 6px;font-size:15px;line-height:1.3}
+#roleBtns small{display:block;font-size:12px;opacity:.75;margin-top:2px}
+#sender{position:fixed;inset:0;z-index:90;background:#000}
+#sendVideo{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+#sendBar{position:absolute;left:0;right:0;bottom:0;padding:16px 16px max(16px,env(safe-area-inset-bottom));
+  background:linear-gradient(transparent,rgba(0,0,0,.85) 30%);display:flex;flex-direction:column;gap:10px}
+#sendRoom{font-family:"Jua","Malgun Gothic",sans-serif;font-size:24px}
+#sendStatus{font-size:15px;padding:8px 12px;border-radius:10px;background:rgba(255,255,255,.12)}
+#sendStatus.ok{background:rgba(52,199,89,.3)}
+#sendStatus.warn{background:rgba(255,180,84,.25);color:#ffd9a8}
+.sendBtns{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.sendBtns button{padding:12px;font-size:16px}
+body.sending #panel,body.sending #showBtn{display:none}
+#roomBox .big{font-family:"Jua","Malgun Gothic",sans-serif;font-size:20px}
 #gateMsg{min-height:20px;margin-top:10px;color:#ff8a8a;font-size:14px}
 #gate.shake form{animation:shake .35s}
 @keyframes shake{25%{transform:translateX(-10px)}50%{transform:translateX(10px)}75%{transform:translateX(-6px)}}
@@ -99,12 +162,36 @@ body.dragging #dropMask{display:flex}
 <body>
 <div id="gate">
   <form id="gateForm" autocomplete="off">
-    <h2>🔒 교실 PIP 화면</h2>
-    <p>입장 번호를 넣어 주세요.</p>
-    <input id="gateInput" type="password" inputmode="numeric" maxlength="12" autofocus aria-label="입장 번호">
-    <button class="primary" type="submit">들어가기</button>
+    <h2>📺 교실 PIP 화면</h2>
+    <p>방 번호를 아무거나 정해서 넣으세요.<br>노트북과 폰에 <b>같은 번호</b>를 넣으면 서로 이어져요.</p>
+    <input id="gateInput" type="text" inputmode="numeric" maxlength="8" placeholder="예: 1234" aria-label="방 번호">
+    <div id="roleBtns">
+      <button type="submit" class="primary" data-role="screen">🖥️ 화면 띄우기<small>노트북·TV 쪽</small></button>
+      <button type="submit" data-role="send">📱 카메라 보내기<small>서브폰 쪽</small></button>
+      <button type="submit" class="cheerBtn" data-role="cheer">💬 응원하기<small>학부모·구경하는 분</small></button>
+    </div>
     <div id="gateMsg"></div>
   </form>
+</div>
+<div id="sender" class="hide">
+  <video id="sendVideo" playsinline muted autoplay></video>
+  <div id="sendBar">
+    <div id="sendRoom"></div>
+    <div id="sendStatus">카메라 켜는 중…</div>
+    <input id="sendName" type="text" maxlength="12" placeholder="이 폰 이름 (예: 1모둠)">
+    <div class="sendBtns"><button id="flipBtn">🔄 앞/뒤 카메라</button><button id="sendExit">나가기</button></div>
+  </div>
+</div>
+<div id="cheer" class="hide">
+  <div id="cheerRoom">💬 응원하기</div>
+  <div class="note" style="color:#b9b3d6">보낸 말과 반응이 교실 화면에 작게 떠요. 고운 말로 응원해 주세요 🙂</div>
+  <div id="cheerFeed"></div>
+  <div class="cheerQuick">
+    <button data-r="👏">👏 박수</button><button data-r="❤️">❤️ 하트</button><button data-r="🎉">🎉 축하</button><button data-r="⭐" class="star">⭐ 별풍선</button>
+  </div>
+  <input id="cheerName" type="text" maxlength="10" placeholder="내 이름 (예: 민지 엄마)">
+  <form id="cheerForm" autocomplete="off"><input id="cheerText" type="text" maxlength="40" placeholder="응원 한마디 (40자까지)"><button class="primary" type="submit">보내기</button></form>
+  <div id="cheerMsg" class="note" style="color:#b9b3d6;min-height:18px"></div>
 </div>
 <div id="stage">
   <div id="hint">영상 파일을 이 화면에 끌어다 놓거나<br>오른쪽 패널에서 고르세요.</div>
@@ -118,9 +205,12 @@ body.dragging #dropMask{display:flex}
     </div><div id="tint"></div></div>
     <div id="deco"></div>
     <div id="capTag"></div>
+    <div id="subTitle"></div>
     <div id="dragCover" title="끌어서 옮기기"></div>
     <div id="resizer" title="끌어서 크기 바꾸기"></div>
   </div>
+  <div id="chatLayer"><div id="chatList"></div><div id="starPop"></div></div>
+  <div id="qrBox" class="hide" title="누르면 닫혀요"><div id="qrCard"><div id="qrTitle"></div><div id="qrCode"></div><div id="qrUrl"></div></div></div>
 </div>
 
 <button id="showBtn">⚙ 설정 (H)</button>
@@ -142,11 +232,18 @@ body.dragging #dropMask{display:flex}
   <section>
     <h2>② 서브폰 카메라 연결</h2>
     <div class="seg" id="srcSeg">
-      <button data-v="local">DroidCam (USB·와이파이)</button>
-      <button data-v="remote">원격 (VDO.Ninja)</button>
+      <button data-v="room">📱 방의 폰</button>
+      <button data-v="local">💻 내 카메라</button>
+      <button data-v="remote">VDO.Ninja</button>
+    </div>
+    <div id="roomBox">
+      <div class="row"><span class="big">방 <b id="roomLabel">-</b></span><span class="note" id="phoneCount">들어온 폰 0대</span></div>
+      <div class="row"><select id="phoneSelect"><option value="">(아직 들어온 폰이 없어요)</option></select></div>
+      <p class="note">서브폰에서 이 주소를 열고 <b>같은 방 번호</b> → <b>📱 카메라 보내기</b>를 누르면 여기에 떠요. 폰이 여러 대면 위 목록에서 골라요.</p>
+      <div class="row"><button id="leaveRoom">방 나가기</button></div>
     </div>
     <div id="localBox">
-      <p class="note">폰과 PC에 DroidCam을 깔고 연결한 뒤 누르세요. 처음엔 카메라 허용 창이 떠요.</p>
+      <p class="note">이 컴퓨터의 카메라(노트북 카메라, DroidCam 등)를 써요. 처음엔 카메라 허용 창이 떠요.</p>
       <div class="row"><button class="primary" id="camStart">카메라 켜기</button><button id="camStop">끄기</button></div>
       <div class="row"><select id="camSelect"><option value="">(카메라 켜면 목록이 나와요)</option></select></div>
     </div>
@@ -174,6 +271,8 @@ body.dragging #dropMask{display:flex}
       <button data-v="pip">PIP 작은 창</button>
       <button data-v="frame">영상 속 초록 칸</button>
     </div>
+    <div class="row note" style="margin-bottom:0;margin-top:10px">전체 화면 비율 (프로젝터·TV)</div>
+    <div class="seg" id="stageSeg"><button data-v="16:9">16:9 가로</button><button data-v="9:16">9:16 세로</button><button data-v="full">창에 꽉</button></div>
     <p class="note" id="modeNote"></p>
     <div id="pipBox">
       <div class="row"><label><input type="checkbox" id="pipChk"> 카메라 창 보이기 <kbd>P</kbd></label></div>
@@ -221,6 +320,16 @@ body.dragging #dropMask{display:flex}
       <button data-v="hearts">💕 하트뿅뿅</button><button data-v="blush">☺️ 볼터치</button>
     </div>
     <p class="note">🐶 강아지·🥳 파티·🌈 무지개·💕 하트뿅뿅은 <b>입을 크게 벌리면</b> 뭔가 튀어나와요. 얼굴 4명까지 따라가요. 얼굴 인식은 이 컴퓨터 안에서만 하고 밖으로 보내지 않아요.</p>
+    <div class="seg ar" id="arSeg5" style="margin-top:6px">
+      <button data-v="ribbon">🎀 리본</button><button data-v="sprout">🌱 새싹</button><button data-v="headphones">🎧 헤드폰</button><button data-v="butterfly">🦋 나비</button>
+    </div>
+    <div class="seg ar" id="arSeg6" style="margin-top:6px">
+      <button data-v="stardust">✨ 별가루</button><button data-v="petals">🌸 꽃잎비</button><button data-v="bee">🐝 꿀벌</button><button data-v="sunflower">🌻 해바라기</button>
+    </div>
+    <div class="row note" style="margin-bottom:0;margin-top:12px">카메라 자막</div>
+    <div class="row"><input type="text" id="subInput" maxlength="40" placeholder="예: 2026 5-6 학급학예회"></div>
+    <div class="seg" id="subPosSeg"><button data-v="top">위에</button><button data-v="bottom">아래에</button><button data-v="off">끄기</button></div>
+    <div class="row note" style="margin-bottom:0;margin-top:12px">이름표</div>
     <div class="row"><input type="text" id="capInput" placeholder="이름표 (예: 오늘의 주인공 ⭐)"></div>
     <p class="note">이름표는 비워 두면 안 보여요. 엔터 없이 바로 바뀌어요.</p>
   </section>
@@ -235,12 +344,22 @@ body.dragging #dropMask{display:flex}
   </section>
 
   <section>
+    <h2>⑦ 응원 댓글 (학부모)</h2>
+    <div class="row"><button class="primary" id="qrBtn">📱 QR 띄우기 (Q)</button><button id="chatClear">화면 댓글 지우기</button></div>
+    <div class="row"><label><input type="checkbox" id="chatChk"> 댓글 보이기</label><label><input type="checkbox" id="reactChk"> 반응·별풍선 보이기</label></div>
+    <div class="row note" id="chatState">댓글 연결 전</div>
+    <p class="note">학부모는 화면의 QR을 찍거나, 이 주소에서 같은 방 번호 → <b>💬 응원하기</b>를 누르면 돼요. 나쁜 말은 ♥로 가려져요.<br>
+    댓글은 무료 공개 알림 서버(ntfy.sh)로 오가고 12시간 뒤 지워져요. 방 번호를 아는 사람은 누구나 보낼 수 있으니, 행사 땐 남들이 짐작하기 어려운 번호(4자리 이상)를 쓰세요.</p>
+  </section>
+
+  <section>
     <div class="row"><button class="primary" id="fsBtn">전체 화면 (F)</button><button id="hideBtn">패널 숨기기 (H)</button></div>
     <div class="keys">
       <kbd>Space</kbd><span>재생 / 멈춤</span>
       <kbd>← →</kbd><span>5초 뒤로 / 앞으로</span>
       <kbd>P</kbd><span>카메라 창 보이기 / 숨기기</span>
       <kbd>R</kbd><span>카메라 화면 90° 돌리기</span>
+      <kbd>Q</kbd><span>응원 QR 띄우기 / 닫기</span>
       <kbd>+ −</kbd><span>카메라 확대 / 축소 (휠도 돼요)</span>
       <kbd>1~8</kbd><span>필터 바꾸기 (0 = 없음)</span>
       <kbd>H</kbd><span>설정 패널 숨기기 / 보이기</span>
@@ -250,27 +369,8 @@ body.dragging #dropMask{display:flex}
   </section>
 </aside>
 
-<script>
-/* ---------- 입장 번호 (번호 자체는 파일에 없고, 해시만 있음) ---------- */
-(() => {
-  const HASH='f26eda40df5871aa2b1e75beb6970c14b0a785b75f48b8b6f1f322166a315207';
-  const gate=document.getElementById('gate'),inp=document.getElementById('gateInput'),msg=document.getElementById('gateMsg');
-  const open=()=>{gate.remove();};
-  try{ if(sessionStorage.getItem('classroom-pip-ok')===HASH){open();return;} }catch(e){}
-  async function sha(s){
-    const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(s));
-    return [...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,'0')).join('');
-  }
-  document.getElementById('gateForm').addEventListener('submit',async e=>{
-    e.preventDefault();
-    if(!window.crypto||!crypto.subtle){msg.textContent='이 브라우저에서는 열 수 없어요. 크롬으로 여세요.';return;}
-    const h=await sha('classroom-pip:'+inp.value.trim());
-    if(h===HASH){ try{sessionStorage.setItem('classroom-pip-ok',HASH);}catch(e){} open(); }
-    else{ msg.textContent='번호가 틀렸어요.'; inp.value=''; gate.classList.remove('shake'); void gate.offsetWidth; gate.classList.add('shake'); inp.focus(); }
-  });
-  inp.focus();
-})();
-</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.5.4/peerjs.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <script>
 (() => {
 'use strict';
@@ -301,16 +401,42 @@ const DECOS={
   animals:[['🐰',3,4,1.1],['🐻',97,5,1],['🐱',97,94,1],['🐶',3,94,1]],
   party:[['🎉',3,5,1.1],['🎈',97,8,1.1],['🎊',96,93,1],['🥳',4,93,1]]
 };
+/* 3D 이모지 그림: Microsoft Fluent Emoji (MIT 라이선스), 버전 고정. 못 불러오면 글자 이모지로 그림 */
+const FE='https://cdn.jsdelivr.net/gh/microsoft/fluentui-emoji@1ffb34c752ecf5d402f04cfb4b392c77f57c54bc/assets/';
+const FLUENT={'👑':'Crown/3D/crown_3d.png','✨':'Sparkles/3D/sparkles_3d.png','❤️':'Red heart/3D/red_heart_3d.png',
+  '💗':'Growing heart/3D/growing_heart_3d.png','💖':'Sparkling heart/3D/sparkling_heart_3d.png','💕':'Two hearts/3D/two_hearts_3d.png',
+  '💓':'Beating heart/3D/beating_heart_3d.png','🕶️':'Sunglasses/3D/sunglasses_3d.png','🌸':'Cherry blossom/3D/cherry_blossom_3d.png',
+  '🌼':'Blossom/3D/blossom_3d.png','🌷':'Tulip/3D/tulip_3d.png','💮':'White flower/3D/white_flower_3d.png','⭐':'Star/3D/star_3d.png',
+  '🌟':'Glowing star/3D/glowing_star_3d.png','🎀':'Ribbon/3D/ribbon_3d.png','🌱':'Seedling/3D/seedling_3d.png',
+  '🎧':'Headphone/3D/headphone_3d.png','🦋':'Butterfly/3D/butterfly_3d.png','🐝':'Honeybee/3D/honeybee_3d.png',
+  '🌻':'Sunflower/3D/sunflower_3d.png','🎈':'Balloon/3D/balloon_3d.png','🎊':'Confetti ball/3D/confetti_ball_3d.png',
+  '🎉':'Party popper/3D/party_popper_3d.png','👓':'Glasses/3D/glasses_3d.png','🐰':'Rabbit face/3D/rabbit_face_3d.png',
+  '🐻':'Bear/3D/bear_3d.png','🐱':'Cat face/3D/cat_face_3d.png','🐶':'Dog face/3D/dog_face_3d.png','🥳':'Partying face/3D/partying_face_3d.png',
+  '🌈':'Rainbow/3D/rainbow_3d.png','🍓':'Strawberry/3D/strawberry_3d.png','🍀':'Four leaf clover/3D/four_leaf_clover_3d.png'};
+const imgCache={};
+function fimg(ch){
+  const p=FLUENT[ch]; if(!p) return null;
+  let im=imgCache[ch];
+  if(!im){im=imgCache[ch]=new Image();im.crossOrigin='anonymous';im.src=FE+p.split('/').map(encodeURIComponent).join('/');}
+  return im.complete&&im.naturalWidth?im:null;
+}
+Object.keys(FLUENT).forEach(fimg); // 미리 불러 두기
 function renderDeco(){
   deco.innerHTML='';
-  (DECOS[S.deco]||[]).forEach(([e,x,y,sc],i)=>{const s=document.createElement('span');s.textContent=e;
-    s.style.left=x+'%';s.style.top=y+'%';s.style.fontSize='calc(var(--s,40px)*'+sc+')';s.style.animationDelay=(i*0.35)+'s';deco.appendChild(s);});
+  (DECOS[S.deco]||[]).forEach(([e,x,y,sc],i)=>{
+    let el;
+    if(FLUENT[e]){el=document.createElement('img');el.alt=e;el.src=imgCache[e]?imgCache[e].src:'';el.style.width='calc(var(--s,40px)*'+sc+')';
+      el.onerror=()=>{const s=document.createElement('span');s.textContent=e;s.style.cssText=el.style.cssText;s.style.fontSize=el.style.width;el.replaceWith(s);};}
+    else{el=document.createElement('span');el.textContent=e;el.style.fontSize='calc(var(--s,40px)*'+sc+')';}
+    el.style.left=x+'%';el.style.top=y+'%';el.style.animationDelay=(i*0.35)+'s';deco.appendChild(el);});
 }
 
 /* ---------- 설정 저장 ---------- */
 const DEF={x:0.70,y:0.62,w:0.26,shape:'round',mirror:false,border:true,pipOn:true,mode:'pip',
-  chroma:false,key:'#00ff00',sim:0.14,soft:0.08,loop:false,vol:1,src:'local',url:'',deviceId:'',
-  zoom:1,rot:0,panX:0,panY:0,aspect:'auto',filter:'none',deco:'none',caption:'',ar:'none'};
+  chroma:false,key:'#00ff00',sim:0.14,soft:0.08,loop:false,vol:1,src:'room',url:'',deviceId:'',room:'',
+  zoom:1,rot:0,panX:0,panY:0,aspect:'auto',filter:'none',deco:'none',caption:'',ar:'none',
+  sub:'2026 5-6 학급학예회',subPos:'bottom',stageAspect:'16:9',chatOn:true,reactOn:true};
+DEF.aspect='16:9';
 let S=Object.assign({},DEF);
 try{const raw=localStorage.getItem('classroom-pip');if(raw)Object.assign(S,JSON.parse(raw));}catch(e){}
 function save(){try{localStorage.setItem('classroom-pip',JSON.stringify(S));}catch(e){}}
@@ -395,7 +521,7 @@ window.addEventListener('drop',e=>{e.preventDefault();dragDepth=0;document.body.
   const f=e.dataTransfer.files&&e.dataTransfer.files[0];if(f)openVideo(f);});
 
 /* ---------- 카메라: DroidCam / 이 컴퓨터 카메라 ---------- */
-let camStream=null, iframe=null;
+let camStream=null, camOwned=false, activePhone=null, iframe=null;
 async function listCameras(currentId){
   const sel=$('#camSelect');
   const devs=(await navigator.mediaDevices.enumerateDevices()).filter(d=>d.kind==='videoinput');
@@ -411,6 +537,7 @@ async function startCamera(deviceId){
   try{
     try{camStream=await navigator.mediaDevices.getUserMedia({audio:false,video:deviceId?Object.assign({deviceId:{exact:deviceId}},base):base});}
     catch(e){ if(deviceId&&(e.name==='OverconstrainedError'||e.name==='NotFoundError')) camStream=await navigator.mediaDevices.getUserMedia({audio:false,video:base}); else throw e; }
+    camOwned=true;
     camVideo.srcObject=camStream; camVideo.play().catch(()=>{});
     const track=camStream.getVideoTracks()[0];
     const id=track.getSettings().deviceId||'';
@@ -428,7 +555,8 @@ async function startCamera(deviceId){
   }
 }
 function stopCamera(){
-  if(camStream){camStream.getTracks().forEach(t=>t.stop());camStream=null;}
+  if(camStream&&camOwned) camStream.getTracks().forEach(t=>t.stop());
+  camStream=null; camOwned=false; activePhone=null;
   camVideo.srcObject=null;
 }
 $('#camStart').onclick=()=>startCamera($('#camSelect').value||S.deviceId);
@@ -475,6 +603,7 @@ function applyMedia(){
   const w=cam.clientWidth||300;
   cam.style.setProperty('--s',Math.max(22,w*0.16)+'px');
   cam.style.setProperty('--cap',Math.max(14,w*0.075)+'px');
+  cam.style.setProperty('--sub',Math.max(15,Math.min(w*0.065,64))+'px');
 }
 function layout(){
   const W=stage.clientWidth,H=stage.clientHeight;
@@ -492,11 +621,22 @@ function layout(){
   applyMedia();
 }
 function setSeg(id,val){document.querySelectorAll(id+' button').forEach(b=>b.classList.toggle('on',b.dataset.v===val));}
+/* 전체 화면 비율: 16:9(기본) / 9:16 / 창에 꽉 — 남는 곳은 검게 */
+function fitStage(){
+  const W=innerWidth,H=innerHeight,r={'16:9':16/9,'9:16':9/16}[S.stageAspect];
+  let w=W,h=H; if(r){ w=Math.min(W,H*r); h=w/r; }
+  stage.style.width=w+'px'; stage.style.height=h+'px';
+  stage.style.left=(W-w)/2+'px'; stage.style.top=(H-h)/2+'px';
+  stage.style.setProperty('--chat',Math.max(13,Math.min(w,h*1.78)*0.017)+'px');
+}
 function applyAll(){
+  fitStage(); setSeg('#stageSeg',S.stageAspect);
+  document.body.classList.toggle('chatOff',!S.chatOn); document.body.classList.toggle('reactOff',!S.reactOn);
   const remote=S.src==='remote', frame=S.mode==='frame';
   document.body.classList.toggle('frame',frame);
-  $('#localBox').classList.toggle('hide',remote);
-  $('#remoteBox').classList.toggle('hide',!remote);
+  $('#localBox').classList.toggle('hide',S.src!=='local');
+  $('#remoteBox').classList.toggle('hide',S.src!=='remote');
+  $('#roomBox').classList.toggle('hide',S.src!=='room');
   $('#pipBox').classList.toggle('hide',frame);
   setSeg('#srcSeg',S.src);setSeg('#modeSeg',S.mode);setSeg('#shapeSeg',S.shape);
 
@@ -506,11 +646,12 @@ function applyAll(){
   cam.classList.toggle('bordered',S.border);
   setSeg('#aspectSeg',S.aspect);setSeg('#filterSeg',S.filter);setSeg('#filterSeg2',S.filter);
   setSeg('#decoSeg',S.deco);setSeg('#decoSeg2',S.deco);
-  ['#arSeg1','#arSeg2','#arSeg3','#arSeg4'].forEach(id=>setSeg(id,S.ar));
+  ['#arSeg1','#arSeg2','#arSeg3','#arSeg4','#arSeg5','#arSeg6'].forEach(id=>setSeg(id,S.ar));
   const F=FILTERS[S.filter]||FILTERS.none;
   camMedia.style.filter=F.f; tint.style.background=F.t;
   cam.classList.toggle('polaroid',S.deco==='polaroid');
   renderDeco(); capTag.textContent=S.caption;
+  const st=$('#subTitle'); st.textContent=S.sub; st.className=S.subPos; setSeg('#subPosSeg',S.subPos);
   $('#rotLabel').textContent=S.rot+'°';
   const keyCam=!frame&&S.chroma&&!remote&&glOk;
   cam.classList.toggle('keyed',keyCam);
@@ -537,8 +678,10 @@ function bindControls(){
   $('#chromaChk').checked=S.chroma; $('#keyColor').value=S.key;
   $('#simRange').value=S.sim; $('#softRange').value=S.soft;
   $('#zoomRange').value=S.zoom; $('#panXRange').value=S.panX; $('#panYRange').value=S.panY;
-  $('#capInput').value=S.caption;
+  $('#capInput').value=S.caption; $('#subInput').value=S.sub;
+  $('#chatChk').checked=S.chatOn; $('#reactChk').checked=S.reactOn;
 }
+$('#subInput').oninput=e=>{S.sub=e.target.value;$('#subTitle').textContent=S.sub;save();};
 function setZoom(z){S.zoom=Math.min(4,Math.max(1,Math.round(z*100)/100));$('#zoomRange').value=S.zoom;save();applyMedia();}
 function rotate(d){S.rot=((S.rot+d)%360+360)%360;save();applyAll();}
 $('#rotL').onclick=()=>rotate(-90);$('#rotR').onclick=()=>rotate(90);
@@ -553,13 +696,19 @@ stage.addEventListener('wheel',e=>{
   e.preventDefault(); setZoom(S.zoom*(e.deltaY<0?1.1:1/1.1));
 },{passive:false});
 const segHandler=(id,key,after)=>document.querySelectorAll(id+' button').forEach(b=>b.onclick=()=>{S[key]=b.dataset.v;save();if(after)after();applyAll();});
-segHandler('#srcSeg','src',()=>{ if(S.src==='remote'){stopCamera();} else {stopRemote();} });
+segHandler('#srcSeg','src',()=>{
+  stopCamera(); stopRemote();
+  if(S.src==='room') pickPhone();
+  else if(S.src==='local') startCamera(S.deviceId);
+});
 segHandler('#modeSeg','mode');
 segHandler('#shapeSeg','shape');
 segHandler('#aspectSeg','aspect');
 segHandler('#filterSeg','filter');segHandler('#filterSeg2','filter');
 segHandler('#decoSeg','deco');segHandler('#decoSeg2','deco');
-['#arSeg1','#arSeg2','#arSeg3','#arSeg4'].forEach(id=>segHandler(id,'ar',()=>{
+segHandler('#subPosSeg','subPos');
+segHandler('#stageSeg','stageAspect');
+['#arSeg1','#arSeg2','#arSeg3','#arSeg4','#arSeg5','#arSeg6'].forEach(id=>segHandler(id,'ar',()=>{
   if(S.ar==='none') return;
   if(S.src==='remote'){status('VDO.Ninja 화면에는 얼굴 필터가 안 돼요. DroidCam으로 연결하면 돼요.',true);return;}
   loadAR();
@@ -579,7 +728,7 @@ const corner=(fx,fy)=>()=>{const W=stage.clientWidth,H=stage.clientHeight;const 
 $('#posTL').onclick=corner(0,0);$('#posTR').onclick=corner(1,0);$('#posBL').onclick=corner(0,1);$('#posBR').onclick=corner(1,1);
 camVideo.onloadedmetadata=layout;
 mainVideo.addEventListener('loadedmetadata',layout);
-window.addEventListener('resize',layout);
+window.addEventListener('resize',()=>{fitStage();layout();});
 
 /* 끌어서 옮기기 / 크기 바꾸기 */
 function dragWith(el,onMove){
@@ -588,7 +737,7 @@ function dragWith(el,onMove){
     const start={px:e.clientX,py:e.clientY,x:S.x,y:S.y,w:S.w};
     const move=ev=>{onMove(start,(ev.clientX-start.px)/stage.clientWidth,(ev.clientY-start.py)/stage.clientHeight);layout();};
     const up=()=>{el.removeEventListener('pointermove',move);el.removeEventListener('pointerup',up);el.removeEventListener('pointercancel',up);
-      const r=cam.getBoundingClientRect();S.x=r.left/stage.clientWidth;S.y=r.top/stage.clientHeight;$('#sizeRange').value=S.w;save();};
+      const r=cam.getBoundingClientRect(),sr=stage.getBoundingClientRect();S.x=(r.left-sr.left)/stage.clientWidth;S.y=(r.top-sr.top)/stage.clientHeight;$('#sizeRange').value=S.w;save();};
     el.addEventListener('pointermove',move);el.addEventListener('pointerup',up);el.addEventListener('pointercancel',up);
   });
 }
@@ -603,7 +752,7 @@ function toggleFS(){
 }
 $('#hideBtn').onclick=togglePanel; $('#showBtn').onclick=togglePanel; $('#fsBtn').onclick=toggleFS;
 window.addEventListener('keydown',e=>{
-  if(document.getElementById('gate')) return;
+  if(document.getElementById('gate')||document.body.classList.contains('sending')) return;
   const tag=(e.target.tagName||'').toLowerCase();
   if(tag==='input'&&e.target.type==='text') return;
   if(e.ctrlKey||e.metaKey||e.altKey) return;
@@ -613,6 +762,7 @@ window.addEventListener('keydown',e=>{
   else if(k==='h'||k==='ㅗ'){togglePanel();}
   else if(k==='p'||k==='ㅔ'){S.pipOn=!S.pipOn;$('#pipChk').checked=S.pipOn;save();applyAll();}
   else if(k==='r'||k==='ㄱ'){rotate(90);}
+  else if(k==='q'||k==='ㅂ'){toggleQR();}
   else if(e.key==='+'||e.key==='='){setZoom(S.zoom*1.1);}
   else if(e.key==='-'||e.key==='_'){setZoom(S.zoom/1.1);}
   else if(/^[0-8]$/.test(e.key)&&tag!=='input'){S.filter=e.key==='0'?'none':FILTER_KEYS[+e.key]||'none';save();applyAll();}
@@ -674,7 +824,10 @@ function geo(lm,w,h){
 function at(g,dx,dy){const ex=Math.cos(g.a),ey=Math.sin(g.a);
   return {x:g.top.x+ex*dx*g.fw+g.up.x*dy*g.fw,y:g.top.y+ey*dx*g.fw+g.up.y*dy*g.fw};}
 function rot(p,a,fn){arCtx.save();arCtx.translate(p.x,p.y);arCtx.rotate(a);fn(arCtx);arCtx.restore();}
-function emo(ch,p,size,a){rot(p,a||0,c=>{c.font=Math.round(size)+'px "Segoe UI Emoji","Apple Color Emoji","Noto Color Emoji",sans-serif';
+function emo(ch,p,size,a){
+  const im=fimg(ch);
+  if(im){rot(p,a||0,c=>{const w=size*1.1,h=w*im.naturalHeight/im.naturalWidth;c.drawImage(im,-w/2,-h/2,w,h);});return;}
+  rot(p,a||0,c=>{c.font=Math.round(size)+'px "Segoe UI Emoji","Apple Color Emoji","Noto Color Emoji",sans-serif';
   c.textAlign='center';c.textBaseline='middle';c.fillText(ch,0,0);});}
 function ell(c,x,y,rx,ry,col,stroke,lw){c.beginPath();c.ellipse(x,y,rx,ry,0,0,Math.PI*2);c.fillStyle=col;c.fill();
   if(stroke){c.lineWidth=lw;c.strokeStyle=stroke;c.stroke();}}
@@ -768,8 +921,334 @@ function drawFace(lm,bs,w,h,dt,i){
     case 'blush':
       blush(g,0.6); twinkle(g,t,[[-0.48,-0.75],[0.5,-0.7],[0.4,0.1]]);
       break;
+    case 'ribbon':
+      emo('🎀',A(0.26,0.1),f*0.55,g.a+0.35+0.05*Math.sin(t*3)); blush(g,0.45);
+      twinkle(g,t,[[-0.45,0.05]]);
+      break;
+    case 'sprout':{
+      const sway=0.18*Math.sin(t*2.2);
+      emo('🌱',A(0.02,0.16+0.02*Math.sin(t*4)),f*0.42,g.a+sway); blush(g,0.4);
+      break;}
+    case 'headphones':
+      emo('🎧',A(0,-0.32),f*1.35,g.a);
+      if(open) spawn(i,6,dt,()=>({ch:['🎵','🎶'][(Math.random()*2)|0],x:g.top.x+rnd(-0.6,0.6)*f,y:g.top.y,vx:rnd(-0.3,0.3)*f,vy:-rnd(0.4,0.7)*f,life:1.6,size:f*0.14,vr:rnd(-1,1)}));
+      break;
+    case 'butterfly':
+      for(let k=0;k<3;k++){const ang=t*1.3+k*2.09,px=Math.cos(ang)*0.75,py=0.15+Math.sin(ang)*0.32;
+        emo('🦋',A(px,py),f*(0.22+0.05*Math.sin(t*9+k)),g.a+0.3*Math.sin(t*5+k));}
+      emo('🦋',A(-0.25,0.06),f*0.24,g.a-0.3);
+      break;
+    case 'stardust':
+      emo('⭐',A(-0.36,-0.08),f*0.2,g.a-0.3); emo('⭐',A(0.36,-0.08),f*0.2,g.a+0.3);
+      spawn(i,open?40:10,dt,()=>({ch:['✨','⭐','🌟'][(Math.random()*3)|0],x:g.top.x+rnd(-0.7,0.7)*f,y:g.top.y-rnd(0,0.3)*f,
+        vx:rnd(-0.1,0.1)*f,vy:rnd(0.3,0.7)*f,life:rnd(1,1.8),size:f*rnd(0.06,0.13),vr:rnd(-2,2)}));
+      blush(g,0.35);
+      break;
+    case 'petals':
+      if(i===0) spawn(99,9,dt,()=>({ch:'🌸',x:rnd(0,w),y:-h*0.05,vx:rnd(-0.05,0.1)*h,vy:rnd(0.12,0.22)*h,life:6,size:h*rnd(0.035,0.06),vr:rnd(-1.5,1.5)}));
+      blush(g,0.4);
+      break;
+    case 'bee':
+      emo('👓',{x:(g.eL.x+g.eR.x)/2,y:(g.eL.y+g.eR.y)/2},f*0.85,g.a);
+      for(let k=0;k<2;k++){const ang=-t*1.8+k*Math.PI,px=Math.cos(ang)*0.7,py=0.05+Math.sin(ang)*0.28;
+        emo('🐝',A(px,py),f*0.2,g.a+(Math.cos(ang)>0?0.3:-0.3));}
+      break;
+    case 'sunflower':{
+      for(let k=0;k<10;k++){const ang=k/10*Math.PI*2+t*0.2;
+        emo('🌻',{x:(g.top.x+g.nose.x)/2+Math.cos(ang)*f*0.62,y:(g.top.y+g.nose.y)/2+Math.sin(ang)*f*0.78},f*0.24,ang);}
+      blush(g,0.4);
+      break;}
   }
 }
+
+/* ---------- 방 번호로 폰 ↔ 화면 연결 (PeerJS + 무료 공개 중계 서버) ---------- */
+const PREFIX='classroom-pip-v1-', screenId=r=>PREFIX+r+'-screen';
+const NETERR=['network','server-error','socket-error','socket-closed'];
+/* 중계 서버: PeerJS 기본 TURN은 없어져서, Metered Open Relay의 공개 static-auth 키로 임시 자격을 만든다 */
+let iceCache=null;
+async function peerOpts(){
+  if(iceCache) return iceCache;
+  const ice=[{urls:'stun:stun.l.google.com:19302'},{urls:'stun:stun.relay.metered.ca:80'}];
+  try{
+    const user=(Math.floor(Date.now()/1000)+12*3600)+':classroom-pip';
+    const enc=new TextEncoder();
+    const key=await crypto.subtle.importKey('raw',enc.encode('openrelayprojectsecret'),{name:'HMAC',hash:'SHA-1'},false,['sign']);
+    const sig=await crypto.subtle.sign('HMAC',key,enc.encode(user));
+    ice.push({urls:['turn:staticauth.openrelay.metered.ca:80','turn:staticauth.openrelay.metered.ca:80?transport=tcp',
+      'turn:staticauth.openrelay.metered.ca:443','turns:staticauth.openrelay.metered.ca:443?transport=tcp'],
+      username:user,credential:btoa(String.fromCharCode(...new Uint8Array(sig)))});
+  }catch(e){}
+  return iceCache={config:{iceServers:ice}};
+}
+const SLOW_TIP='연결이 오래 걸리면: 폰을 노트북 핫스팟(또는 같은 와이파이)에 붙이거나, ② 에서 VDO.Ninja로 연결하세요.';
+const phones=new Map();
+let hPeer=null, idTries=0;
+function renderPhones(){
+  const sel=$('#phoneSelect'); sel.innerHTML='';
+  if(!phones.size){const o=document.createElement('option');o.value='';o.textContent='(아직 들어온 폰이 없어요)';sel.appendChild(o);}
+  let n=0; phones.forEach((p,id)=>{n++;const o=document.createElement('option');o.value=id;o.textContent='📱 '+(p.name||('폰 '+n));sel.appendChild(o);});
+  if(activePhone&&phones.has(activePhone)) sel.value=activePhone;
+  $('#phoneCount').textContent='들어온 폰 '+phones.size+'대';
+}
+function usePhone(id){
+  const p=phones.get(id); if(!p) return;
+  if(camOwned) stopCamera(); stopRemote();
+  camStream=p.stream; camOwned=false; activePhone=id;
+  camVideo.srcObject=p.stream; camVideo.play().catch(()=>{});
+  renderPhones(); applyAll(); status('📱 '+(p.name||'폰')+' 화면을 띄웠어요.');
+}
+function pickPhone(){
+  if(activePhone&&phones.has(activePhone)) return usePhone(activePhone);
+  const first=phones.keys().next().value;
+  if(first) usePhone(first);
+  else { applyAll(); if(S.room) status('방 '+S.room+'에 아직 폰이 없어요. 폰에서 같은 번호로 "📱 카메라 보내기"를 누르세요.'); }
+}
+function dropPhone(id,call){
+  const p=phones.get(id); if(!p||(call&&p.call!==call)) return;
+  phones.delete(id);
+  if(activePhone===id){
+    activePhone=null;
+    if(S.src==='room'){camStream=null;camVideo.srcObject=null;
+      const next=phones.keys().next().value;
+      if(next) usePhone(next); else status('폰 연결이 끊겼어요. 폰이 다시 들어오면 자동으로 떠요.',true);}
+  }
+  renderPhones(); applyAll();
+}
+$('#phoneSelect').onchange=e=>{ if(e.target.value){ S.src='room'; save(); usePhone(e.target.value); } };
+$('#leaveRoom').onclick=()=>location.reload();
+async function startScreen(room){
+  $('#roomLabel').textContent=room;
+  if(typeof Peer==='undefined'){status('연결 도구를 못 불러왔어요. 인터넷을 확인하세요. (💻 내 카메라는 쓸 수 있어요)',true);return;}
+  hPeer=new Peer(screenId(room),await peerOpts());
+  hPeer.on('open',()=>{idTries=0;status('방 '+room+'을 열었어요. 폰에서 같은 번호로 "📱 카메라 보내기"를 누르세요.');});
+  hPeer.on('call',call=>{
+    call.answer();
+    const slow=setTimeout(()=>{ const pc=call.peerConnection; if(pc&&pc.connectionState!=='connected') status('📱 폰이 들어왔는데 화면이 아직 안 와요. '+SLOW_TIP,true); },15000);
+    call.on('stream',st=>{
+      const pc0=call.peerConnection; if(pc0) pc0.addEventListener('connectionstatechange',()=>{ if(pc0.connectionState==='connected') clearTimeout(slow); });
+      const name=(call.metadata&&call.metadata.name)||'';
+      phones.set(call.peer,{call,stream:st,name}); renderPhones();
+      if(S.src==='room'&&(!activePhone||activePhone===call.peer||!phones.has(activePhone))) usePhone(call.peer);
+      else status('📱 '+(name||'폰')+'이 들어왔어요. ② 목록에서 고르면 떠요.');
+    });
+    call.on('close',()=>dropPhone(call.peer,call));
+    call.on('error',()=>dropPhone(call.peer,call));
+    const pc=call.peerConnection;
+    if(pc) pc.addEventListener('connectionstatechange',()=>{ if(pc.connectionState==='failed'||pc.connectionState==='closed') dropPhone(call.peer,call); });
+  });
+  hPeer.on('error',e=>{
+    if(e.type==='unavailable-id'){
+      hPeer.destroy();
+      if(++idTries<=6){status('방을 여는 중… 잠시만요.');setTimeout(()=>startScreen(room),4000);}
+      else status('이 방 번호에는 이미 다른 화면이 열려 있어요. 다른 번호를 쓰거나 그 화면을 닫으세요.',true);
+    } else if(NETERR.includes(e.type)) status('연결 서버에 닿지 않아요. 인터넷을 확인하세요. 다시 시도하는 중…',true);
+  });
+  hPeer.on('disconnected',()=>setTimeout(()=>{ if(hPeer&&!hPeer.destroyed){try{hPeer.reconnect();}catch(e){}} },2000));
+}
+
+/* 폰 쪽: 카메라 보내기 */
+let sPeer=null,sStream=null,sCall=null,sRoom='',facing='environment',sRetry=null;
+function sStatus(m,cls){const el=$('#sendStatus');el.textContent=m;el.className=cls||'';}
+async function sGetCam(){
+  try{
+    if(sStream) sStream.getTracks().forEach(t=>t.stop());
+    const st=await navigator.mediaDevices.getUserMedia({audio:false,video:{facingMode:{ideal:facing},width:{ideal:1280},height:{ideal:720}}});
+    sStream=st; const v=$('#sendVideo'); v.srcObject=st; v.style.transform=facing==='user'?'scaleX(-1)':'';
+    if(sCall&&sCall.peerConnection){const snd=sCall.peerConnection.getSenders().find(s=>s.track&&s.track.kind==='video');
+      if(snd) await snd.replaceTrack(st.getVideoTracks()[0]);}
+    return true;
+  }catch(e){
+    sStatus(e.name==='NotAllowedError'?'카메라 허용을 눌러 주세요. 주소창 옆 자물쇠에서 바꿀 수 있어요.':'카메라를 켤 수 없어요: '+e.message,'warn');
+    return false;
+  }
+}
+function retryLater(){clearTimeout(sRetry);sRetry=setTimeout(sCallScreen,3000);}
+function sCallScreen(){
+  clearTimeout(sRetry);
+  if(!sPeer||sPeer.destroyed||!sStream) return;
+  if(!sPeer.open){retryLater();return;}
+  if(sCall){const old=sCall;sCall=null;try{old.close();}catch(e){}}
+  const call=sPeer.call(screenId(sRoom),sStream,{metadata:{name:$('#sendName').value.trim()}});
+  if(!call){retryLater();return;}
+  sCall=call; sStatus('화면에 연결하는 중…');
+  const pc=call.peerConnection;
+  setTimeout(()=>{ if(sCall===call&&pc&&pc.connectionState!=='connected') sStatus('아직 연결 중이에요. '+SLOW_TIP,'warn'); },15000);
+  const chk=()=>{ if(sCall!==call) return; const s=pc.connectionState||pc.iceConnectionState;
+    if(s==='connected'||s==='completed') sStatus('✅ 화면에 연결됐어요! 이 폰을 세워 두세요.','ok');
+    else if(s==='failed'||s==='disconnected'||s==='closed'){sStatus('연결이 끊겼어요. 다시 연결하는 중…','warn');retryLater();} };
+  if(pc){pc.addEventListener('connectionstatechange',chk);pc.addEventListener('iceconnectionstatechange',chk);}
+  call.on('close',()=>{ if(sCall===call){sStatus('노트북 화면이 닫혔어요. 다시 연결하는 중…','warn');retryLater();} });
+}
+function keepAwake(){try{if(navigator.wakeLock)navigator.wakeLock.request('screen').catch(()=>{});}catch(e){}}
+async function startSender(room){
+  sRoom=room; document.body.classList.add('sending');
+  $('#sender').classList.remove('hide'); $('#sendRoom').textContent='📱 방 '+room;
+  try{$('#sendName').value=localStorage.getItem('classroom-pip-name')||'';}catch(e){}
+  if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){sStatus('이 브라우저는 카메라를 못 써요. 크롬으로 여세요.','warn');return;}
+  if(typeof Peer==='undefined'){sStatus('연결 도구를 못 불러왔어요. 인터넷을 확인하세요.','warn');return;}
+  if(!(await sGetCam())) return;
+  sStatus('화면을 찾는 중…');
+  sPeer=new Peer(await peerOpts());
+  sPeer.on('open',sCallScreen);
+  sPeer.on('error',e=>{
+    if(e.type==='peer-unavailable'){sStatus('노트북 쪽이 아직 없어요. 노트북에서 방 '+room+' → "🖥️ 화면 띄우기"를 누르세요. (자동으로 계속 찾아요)','warn');retryLater();}
+    else if(NETERR.includes(e.type)){sStatus('인터넷 연결을 확인하세요. 다시 시도하는 중…','warn');retryLater();}
+  });
+  sPeer.on('disconnected',()=>setTimeout(()=>{ if(sPeer&&!sPeer.destroyed){try{sPeer.reconnect();}catch(e){}} },2000));
+  keepAwake(); document.addEventListener('visibilitychange',()=>{ if(document.visibilityState==='visible') keepAwake(); });
+}
+$('#flipBtn').onclick=async()=>{
+  const prev=facing; facing=facing==='environment'?'user':'environment';
+  if(!(await sGetCam())){facing=prev;await sGetCam();sStatus('다른 쪽 카메라를 못 켰어요. 원래 카메라로 계속 보내요.','warn');}
+};
+$('#sendName').onchange=e=>{try{localStorage.setItem('classroom-pip-name',e.target.value.trim());}catch(err){} sCallScreen();};
+$('#sendExit').onclick=()=>location.reload();
+
+/* ---------- 응원 댓글 (ntfy.sh 무료 공개 알림 서버로 주고받음) ---------- */
+const NTFY='https://ntfy.sh/', chatTopic=r=>'classroom-pip-v1-room-'+r;
+const BAD=['시발','씨발','씨빨','ㅅㅂ','ㅆㅂ','병신','ㅂㅅ','븅신','좆','ㅈㄹ','지랄','개새','개색','새끼','ㅅㄲ','존나','졸라','ㅈㄴ','닥쳐','꺼져','미친놈','미친년','썅','엿먹','등신','멍청이','바보','fuck','shit','bitch'];
+function cleanText(s,max){
+  s=String(s||'').replace(/[\u0000-\u001f]/g,' ').trim().slice(0,max||40);
+  BAD.forEach(w=>{ if(w) s=s.split(w).join('♥'.repeat(Math.min(w.length,3))); });
+  return s;
+}
+async function chatSend(room,obj){
+  try{ const r=await fetch(NTFY+chatTopic(room),{method:'POST',body:encodeURIComponent(JSON.stringify(obj))}); return r.ok; }catch(e){ return false; }
+}
+function chatListen(room,onMsg,onState){
+  const es=new EventSource(NTFY+chatTopic(room)+'/sse');
+  es.onopen=()=>onState&&onState(true);
+  es.onerror=()=>onState&&onState(false);
+  es.onmessage=e=>{ try{ const d=JSON.parse(e.data); if(d.event!=='message') return; onMsg(JSON.parse(decodeURIComponent(d.message))); }catch(err){} };
+  return es;
+}
+function chatEl(m){
+  const d=document.createElement('div'); d.className='chat';
+  const b=document.createElement('b'); b.textContent=cleanText(m.n,10)||'익명';
+  d.appendChild(b); d.appendChild(document.createTextNode(cleanText(m.m,40))); return d;
+}
+const REACT_IMG={'👏':'Clapping hands/Default/3D/clapping_hands_3d_default.png','👍':'Thumbs up/Default/3D/thumbs_up_3d_default.png'};
+function emojiImg(ch){
+  const p=FLUENT[ch]||REACT_IMG[ch]; const el=document.createElement('div'); el.className='react';
+  if(p){const im=document.createElement('img');im.alt=ch;im.src=FE+p.split('/').map(encodeURIComponent).join('/');im.onerror=()=>{el.textContent=ch;};el.appendChild(im);}
+  else el.textContent=ch;
+  return el;
+}
+function showChat(m){
+  const list=$('#chatList'), el=chatEl(m); list.appendChild(el);
+  while(list.children.length>7) list.firstChild.remove();
+  setTimeout(()=>{el.classList.add('bye');setTimeout(()=>el.remove(),700);},15000);
+}
+function showReact(ch,count){
+  const layer=$('#chatLayer'); const n=Math.max(1,Math.min(12,count|0));
+  for(let k=0;k<n;k++) setTimeout(()=>{
+    const el=emojiImg(['👏','❤️','🎉','👍'].includes(ch)?ch:'❤️');
+    el.style.right=(3+Math.random()*12)+'%'; el.style.setProperty('--dx',(Math.random()*-14-2)+'cqw');
+    el.style.animationDuration=(2.6+Math.random()*1.4)+'s'; layer.appendChild(el); setTimeout(()=>el.remove(),4200);
+  },k*160);
+}
+const starQ=[]; let starBusy=false;
+function showStar(m){ starQ.push(m); if(!starBusy) nextStar(); }
+function nextStar(){
+  const m=starQ.shift(); if(!m){starBusy=false;return;} starBusy=true;
+  const card=document.createElement('div'); card.className='starCard';
+  const im=document.createElement('img'); im.alt='⭐'; im.src=FE+'Glowing%20star/3D/glowing_star_3d.png'; im.onerror=()=>im.replaceWith(document.createTextNode('⭐'));
+  const t=document.createElement('div'); t.textContent=(cleanText(m.n,10)||'익명')+'님이 별풍선을 보냈어요!';
+  const msg=cleanText(m.m,40); if(msg){const sm=document.createElement('small');sm.textContent=msg;t.appendChild(sm);}
+  card.appendChild(im); card.appendChild(t); $('#starPop').appendChild(card);
+  showReact('🎉',4);
+  setTimeout(()=>{card.remove();nextStar();},4300);
+}
+function onChat(m){
+  if(!m||typeof m!=='object') return;
+  if(m.k==='c'&&cleanText(m.m)) showChat(m);
+  else if(m.k==='r') showReact(m.r,m.c);
+  else if(m.k==='s') showStar(m);
+}
+let chatES=null;
+function startChatScreen(room){
+  if(!window.EventSource){$('#chatState').textContent='이 브라우저는 댓글을 받을 수 없어요.';return;}
+  chatES=chatListen(room,onChat,ok=>{$('#chatState').textContent=ok?'✅ 댓글 받는 중 (방 '+room+')':'댓글 서버 다시 연결 중…';});
+}
+$('#chatChk').onchange=e=>{S.chatOn=e.target.checked;save();applyAll();};
+$('#reactChk').onchange=e=>{S.reactOn=e.target.checked;save();applyAll();};
+$('#chatClear').onclick=()=>{$('#chatList').innerHTML='';$('#starPop').innerHTML='';starQ.length=0;starBusy=false;};
+function cheerUrl(room){return location.origin+location.pathname+'?room='+encodeURIComponent(room)+'&role=cheer';}
+let qrMadeFor='';
+function toggleQR(force){
+  const box=$('#qrBox'), show=force!==undefined?force:box.classList.contains('hide');
+  if(show&&S.room&&qrMadeFor!==S.room){
+    const url=cheerUrl(S.room); $('#qrCode').innerHTML='';
+    if(window.QRCode) new QRCode($('#qrCode'),{text:url,width:512,height:512,correctLevel:QRCode.CorrectLevel.M});
+    else $('#qrCode').textContent='(QR을 못 만들었어요. 아래 주소를 알려 주세요)';
+    $('#qrTitle').textContent='📱 찍고 응원하기! · 방 '+S.room; $('#qrUrl').textContent=url; qrMadeFor=S.room;
+  }
+  box.classList.toggle('hide',!show);
+}
+$('#qrBtn').onclick=()=>toggleQR(); $('#qrBox').onclick=()=>toggleQR(false);
+
+/* 학부모 쪽: 응원하기 */
+let lastSend=0,lastStar=0,reactBuf={},reactT=null,cRoom='';
+function cheerMsg(t){$('#cheerMsg').textContent=t;}
+function cheerName(){return cleanText($('#cheerName').value,10);}
+function flushReact(){
+  reactT=null; const buf=reactBuf; reactBuf={};
+  Object.keys(buf).forEach(r=>chatSend(cRoom,{k:'r',r,c:Math.min(buf[r],12),n:cheerName()}));
+}
+function startCheer(room){
+  cRoom=room; document.body.classList.add('sending');
+  $('#cheer').classList.remove('hide'); $('#cheerRoom').textContent='💬 방 '+room+' 응원하기';
+  try{$('#cheerName').value=localStorage.getItem('classroom-pip-cheername')||'';}catch(e){}
+  const feed=$('#cheerFeed');
+  chatListen(room,m=>{
+    if(!m) return; let el;
+    if(m.k==='c') el=chatEl(m);
+    else if(m.k==='s'){el=chatEl({n:m.n,m:'⭐ 별풍선! '+(m.m||'')});}
+    else return;
+    feed.appendChild(el); while(feed.children.length>60) feed.firstChild.remove(); feed.scrollTop=feed.scrollHeight;
+  },ok=>cheerMsg(ok?'연결됐어요. 응원을 보내 보세요!':'연결 중…'));
+}
+$('#cheerName').onchange=e=>{try{localStorage.setItem('classroom-pip-cheername',cleanText(e.target.value,10));}catch(err){}};
+$('#cheerForm').addEventListener('submit',async e=>{
+  e.preventDefault();
+  const txt=cleanText($('#cheerText').value,40); if(!txt) return;
+  if(Date.now()-lastSend<2000){cheerMsg('조금만 천천히 보내 주세요 🙂');return;}
+  lastSend=Date.now(); $('#cheerText').value='';
+  cheerMsg((await chatSend(cRoom,{k:'c',n:cheerName(),m:txt}))?'보냈어요!':'못 보냈어요. 인터넷을 확인하고 다시 보내 주세요.');
+});
+document.querySelectorAll('.cheerQuick button').forEach(b=>b.onclick=async()=>{
+  const r=b.dataset.r;
+  if(r==='⭐'){
+    if(Date.now()-lastStar<10000){cheerMsg('별풍선은 10초에 한 번만 보낼 수 있어요.');return;}
+    lastStar=Date.now();
+    cheerMsg((await chatSend(cRoom,{k:'s',n:cheerName(),m:cleanText($('#cheerText').value,40)}))?'⭐ 별풍선을 보냈어요!':'못 보냈어요. 다시 눌러 주세요.');
+    $('#cheerText').value=''; return;
+  }
+  reactBuf[r]=(reactBuf[r]||0)+1; if(!reactT) reactT=setTimeout(flushReact,1500);
+  b.animate([{transform:'scale(1)'},{transform:'scale(1.15)'},{transform:'scale(1)'}],{duration:220});
+});
+
+/* 방 번호 입장 */
+const gate=$('#gate');
+try{const r=localStorage.getItem('classroom-pip-room');if(r)$('#gateInput').value=r;}catch(e){}
+const qs=new URLSearchParams(location.search);
+if(/^\d{2,8}$/.test(qs.get('room')||'')) $('#gateInput').value=qs.get('room');
+$('#gateForm').addEventListener('submit',e=>{
+  e.preventDefault();
+  const v=$('#gateInput').value.trim();
+  if(!/^\d{2,8}$/.test(v)){$('#gateMsg').textContent='숫자 2~8자리로 넣어 주세요.';gate.classList.remove('shake');void gate.offsetWidth;gate.classList.add('shake');return;}
+  const role=(e.submitter&&e.submitter.dataset.role)||e.role||'screen';
+  enterRoom(v,role);
+});
+function enterRoom(v,role){
+  try{localStorage.setItem('classroom-pip-room',v);}catch(err){}
+  S.room=v; gate.remove();
+  if(role==='send') startSender(v);
+  else if(role==='cheer') startCheer(v);
+  else { startChatScreen(v); startScreen(v); if(S.src==='local') startCamera(S.deviceId); else if(S.src==='room') pickPhone(); }
+}
+if(/^\d{2,8}$/.test(qs.get('room')||'')&&qs.get('role')==='cheer') enterRoom(qs.get('room'),'cheer');
+else setTimeout(()=>{const i=$('#gateInput');if(i)i.focus();},50);
 
 bindControls(); applyAll(); requestAnimationFrame(loop);
 if(!glOk) status('그래픽 가속이 꺼져 있어 크로마키는 못 써요. PIP는 돼요.',true);
