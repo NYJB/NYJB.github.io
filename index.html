@@ -76,8 +76,32 @@ body.chatOff #chatList,body.reactOff .react,body.reactOff #starPop{display:none}
 #onair{font-variant-numeric:tabular-nums}
 #onair.live{color:#ff6b6b;font-weight:700}
 #storyLinkBtn{display:block;margin:12px auto 0;color:#cbbcf0;font-size:14px;background:none;border:0;text-decoration:underline;cursor:pointer}
+#ctrl{display:none}
+body.outOpen #ctrl{display:flex;flex-direction:column;gap:10px;position:fixed;left:12px;top:12px;bottom:12px;right:calc(330px + 36px);z-index:19;
+  overflow:auto;background:#101217;border:1px solid var(--line);border-radius:14px;padding:14px 16px}
+body.outOpen #panel{display:block!important}
+body.outOpen #showBtn{display:none}
+.ctrlHead{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.ctrlHead h2{margin:0;font-size:20px}
+#ctrlClock{font-variant-numeric:tabular-nums;font-size:22px;font-weight:700}
+#ctrlAir{font-variant-numeric:tabular-nums}
+#ctrlAir.live{color:#ff6b6b;font-weight:700}
+#thumbs{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px}
+.thumb{position:relative;border:3px solid #2c3038;border-radius:12px;overflow:hidden;background:#000;cursor:pointer;aspect-ratio:16/9}
+.thumb video{width:100%;height:100%;object-fit:cover;display:block}
+.thumb .tname{position:absolute;left:0;right:0;bottom:0;padding:6px 8px;background:linear-gradient(transparent,rgba(0,0,0,.8));font-size:14px;display:flex;align-items:center;gap:6px}
+.thumb .tname span{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.thumb .tname button{padding:3px 7px;font-size:12px}
+.thumb .live{position:absolute;left:8px;top:8px;background:#e53935;color:#fff;font-size:13px;font-weight:700;padding:2px 8px;border-radius:6px;display:none}
+.thumb.on{border-color:#e53935;box-shadow:0 0 0 2px rgba(229,57,53,.35)}
+.thumb.on .live{display:block}
+.thumb .num{position:absolute;right:8px;top:8px;background:rgba(0,0,0,.6);font-size:13px;padding:1px 7px;border-radius:6px}
+.thumb.empty{display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:14px;text-align:center;padding:12px;cursor:default}
+.ctrlBar{display:flex;gap:8px;flex-wrap:wrap}
+.ctrlBar button{padding:10px 14px}
 #gate #roleBtns .cheerBtn{grid-column:1 / -1;background:linear-gradient(135deg,#ff6fa5,#9b78ff);border:0;color:#fff}
 #hint{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;text-align:center;color:#8a92a0;font-size:22px;line-height:1.6;z-index:0;padding:24px}
+body.clean #hint{display:none}
 #mainVideo,#mainCanvas{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;z-index:2}
 #mainCanvas{display:none;pointer-events:none}
 body.frame #mainCanvas{display:block}
@@ -281,9 +305,28 @@ body.dragging #dropMask{display:flex}
 <button id="showBtn">⚙ 설정 (H)</button>
 <div id="dropMask">여기에 놓으면 영상이 열려요</div>
 
+<section id="ctrl">
+  <div class="ctrlHead">
+    <h2>🎬 조정실</h2>
+    <span id="ctrlClock">--:--:--</span><span id="ctrlAir" class="note"></span>
+    <span style="flex:1"></span>
+    <button id="outFocus">방송 화면 창 보기</button><button id="outClose">방송 화면 창 닫기</button>
+  </div>
+  <p class="note">방송 화면 창을 프로젝터(또는 두 번째 모니터)로 끌어다 놓고, 그 창을 한 번 누른 뒤 <kbd>F</kbd>를 누르면 전체 화면이 돼요. OBS는 그 창을 잡으면 돼요.<br>
+  아래 화면을 누르면 방송 화면이 그걸로 바로 바뀌어요. 이 창을 최소화하지는 마세요(필터가 멈출 수 있어요).</p>
+  <div id="thumbs"></div>
+  <div class="ctrlBar">
+    <button id="ctrlCamOff">⬛ 카메라 없이 (영상만)</button>
+    <button id="ctrlPip">PIP 보이기/숨기기 <kbd>P</kbd></button>
+    <button id="ctrlMode">PIP ↔ 초록 칸</button>
+    <button id="ctrlPlay">▶ 영상 재생/멈춤 <kbd>Space</kbd></button>
+    <button id="ctrlStoryHide">사연 내리기</button>
+  </div>
+</section>
 <aside id="panel">
   <h1>교실 PIP 화면</h1>
   <p class="sub">영상 위에 서브폰 카메라를 띄웁니다. 준비가 끝나면 <kbd>H</kbd>로 이 패널을 숨기고 <kbd>F</kbd>로 전체 화면.</p>
+  <div class="row"><button class="primary" id="outBtn">🎬 방송 화면 따로 띄우기 (두 모니터)</button></div>
 
   <section>
     <h2>① 영상</h2>
@@ -454,7 +497,8 @@ body.dragging #dropMask{display:flex}
 <script>
 (() => {
 'use strict';
-const $ = s => document.querySelector(s);
+let outWin=null;   // 따로 띄운 "방송 화면" 창 (두 모니터용)
+const $ = s => document.querySelector(s) || (outWin&&!outWin.closed ? outWin.document.querySelector(s) : null);
 const stage=$('#stage'), mainVideo=$('#mainVideo'), mainCanvas=$('#mainCanvas'), hint=$('#hint');
 const cam=$('#cam'), camInner=$('#camInner'), camMedia=$('#camMedia'), camVideo=$('#camVideo'), camCanvas=$('#camCanvas');
 const tint=$('#tint'), deco=$('#deco'), capTag=$('#capTag');
@@ -704,7 +748,8 @@ function layout(){
 function setSeg(id,val){document.querySelectorAll(id+' button').forEach(b=>b.classList.toggle('on',b.dataset.v===val));}
 /* 전체 화면 비율: 16:9(기본) / 9:16 / 창에 꽉 — 남는 곳은 검게 */
 function fitStage(){
-  const W=innerWidth,H=innerHeight,r={'16:9':16/9,'9:16':9/16}[S.stageAspect];
+  const win=stage.ownerDocument.defaultView||window;
+  const W=win.innerWidth,H=win.innerHeight,r={'16:9':16/9,'9:16':9/16}[S.stageAspect];
   let w=W,h=H; if(r){ w=Math.min(W,H*r); h=w/r; }
   stage.style.width=w+'px'; stage.style.height=h+'px';
   stage.style.left=(W-w)/2+'px'; stage.style.top=(H-h)/2+'px';
@@ -749,6 +794,7 @@ function applyAll(){
   $('#chromaNote').textContent=cn;
   $('#chromaChk').disabled=remote||!glOk;
   layout();
+  if(typeof syncOut==='function'){ syncOut(); renderThumbs(); }
 }
 function bindControls(){
   $('#loopChk').checked=S.loop; mainVideo.loop=S.loop;
@@ -828,19 +874,20 @@ dragWith($('#resizer'),(s,dx)=>{S.w=Math.min(0.9,Math.max(0.08,s.w+dx));});
 
 /* ---------- 패널, 전체 화면, 단축키 ---------- */
 function togglePanel(){document.body.classList.toggle('clean');poke();}
-function toggleFS(){
-  if(document.fullscreenElement) document.exitFullscreen();
-  else document.documentElement.requestFullscreen().catch(()=>status('전체 화면이 안 돼요.',true));
+function toggleFS(d){
+  d=(d&&d.documentElement)?d:document;
+  if(d.fullscreenElement) d.exitFullscreen();
+  else d.documentElement.requestFullscreen().catch(()=>status('전체 화면이 안 돼요. 방송 화면 창을 한 번 누르고 F를 눌러 보세요.',true));
 }
-$('#hideBtn').onclick=togglePanel; $('#showBtn').onclick=togglePanel; $('#fsBtn').onclick=toggleFS;
-window.addEventListener('keydown',e=>{
+$('#hideBtn').onclick=togglePanel; $('#showBtn').onclick=togglePanel; $('#fsBtn').onclick=()=>toggleFS(document);
+function onKey(e){
   if(document.getElementById('gate')||document.body.classList.contains('sending')) return;
   const tag=(e.target.tagName||'').toLowerCase();
   if(tag==='input'&&e.target.type==='text') return;
   if(e.ctrlKey||e.metaKey||e.altKey) return;
   const k=e.key.toLowerCase();
   if(e.code==='Space'){e.preventDefault();togglePlay();}
-  else if(k==='f'||k==='ㄹ'){toggleFS();}
+  else if(k==='f'||k==='ㄹ'){toggleFS(e.target&&e.target.ownerDocument);}
   else if(k==='h'||k==='ㅗ'){togglePanel();}
   else if(k==='p'||k==='ㅔ'){S.pipOn=!S.pipOn;$('#pipChk').checked=S.pipOn;save();applyAll();}
   else if(k==='r'||k==='ㄱ'){rotate(90);}
@@ -850,7 +897,8 @@ window.addEventListener('keydown',e=>{
   else if(/^[0-8]$/.test(e.key)&&tag!=='input'){S.filter=e.key==='0'?'none':FILTER_KEYS[+e.key]||'none';save();applyAll();}
   else if(e.key==='ArrowRight'){mainVideo.currentTime+=5;}
   else if(e.key==='ArrowLeft'){mainVideo.currentTime=Math.max(0,mainVideo.currentTime-5);}
-});
+}
+window.addEventListener('keydown',onKey);
 let idleT;
 function poke(){document.body.classList.remove('idle');clearTimeout(idleT);idleT=setTimeout(()=>document.body.classList.add('idle'),2500);}
 window.addEventListener('pointermove',poke);
@@ -860,8 +908,12 @@ function loop(){
   if(S.mode==='frame'){ if(mainVideo.readyState>=2) mainKeyer.render(mainVideo); }
   else if(cam.classList.contains('keyed')&&camVideo.readyState>=2) camKeyer.render(camVideo);
   try{arFrame();}catch(e){}
-  requestAnimationFrame(loop);
+  // 방송 화면이 다른 창에 있으면 그 창의 화면 주기에 맞춰 그림
+  const w=stage.ownerDocument.defaultView||window, my=loopGen;
+  w.requestAnimationFrame(()=>{ if(my===loopGen) loop(); });
 }
+let loopGen=0;
+function restartLoop(){ loopGen++; const w=stage.ownerDocument.defaultView||window, my=loopGen; w.requestAnimationFrame(()=>{ if(my===loopGen) loop(); }); }
 
 /* ---------- 얼굴 필터 (Google MediaPipe, 무료·Apache-2.0) ---------- */
 const arCanvas=$('#arCanvas'), arCtx=arCanvas.getContext('2d');
@@ -1532,6 +1584,87 @@ function enterRoom(v,role){
 }
 if(/^\d{2,8}$/.test(qs.get('room')||'')&&['cheer','story'].includes(qs.get('role'))) enterRoom(qs.get('room'),qs.get('role'));
 else setTimeout(()=>{const i=$('#gateInput');if(i)i.focus();},50);
+
+/* ---------- 두 모니터: 방송 화면 창 + 조정실 ---------- */
+const thumbVids=new Map();
+function thumbVideo(key,stream){
+  let v=thumbVids.get(key);
+  if(!v){v=document.createElement('video');v.muted=true;v.autoplay=true;v.playsInline=true;thumbVids.set(key,v);}
+  if(v.srcObject!==stream){v.srcObject=stream;v.play().catch(()=>{});}
+  return v;
+}
+function renderThumbs(){
+  if(!document.body.classList.contains('outOpen')) return;
+  const box=document.getElementById('thumbs'); box.innerHTML=''; let n=0; const used=new Set();
+  const add=(key,name,stream,isOn,onPick,extra)=>{
+    n++; const t=document.createElement('div'); t.className='thumb'+(isOn?' on':'');
+    if(stream){t.appendChild(thumbVideo(key,stream));used.add(key);} else {t.classList.add('empty');t.textContent=name;}
+    const lv=document.createElement('div');lv.className='live';lv.textContent='🔴 방송 중';t.appendChild(lv);
+    const nm=document.createElement('div');nm.className='num';nm.textContent=n;t.appendChild(nm);
+    if(stream){const bar=document.createElement('div');bar.className='tname';const s=document.createElement('span');s.textContent=name;bar.appendChild(s);if(extra)extra(bar);t.appendChild(bar);}
+    t.onclick=onPick; box.appendChild(t);
+  };
+  phones.forEach((p,id)=>add(id,'📱 '+(p.name||'폰'),p.stream,id===activePhone&&!!camStream,
+    ()=>{S.src='room';save();usePhone(id);},
+    bar=>{const b=document.createElement('button');b.textContent=p.sound?'🔊 소리':'🔇 소리';
+      b.onclick=e=>{e.stopPropagation();$('#phoneSelect').value=id;$('#phoneSound').click();renderThumbs();};bar.appendChild(b);}));
+  if(!phones.size){const t=document.createElement('div');t.className='thumb empty';
+    t.textContent='아직 들어온 폰이 없어요. 폰에서 방 '+(S.room||'')+' → 📱 카메라 보내기';box.appendChild(t);}
+  if(camOwned&&camStream) add('local','💻 이 컴퓨터 카메라',camStream,true,()=>{});
+  else add('local-off','💻 이 컴퓨터 카메라 켜기',null,false,()=>{S.src='local';save();applyAll();startCamera(S.deviceId);});
+  thumbVids.forEach((v,k)=>{ if(!used.has(k)){v.srcObject=null;thumbVids.delete(k);} });
+}
+function syncOut(){
+  if(!outWin||outWin.closed) return;
+  const b=outWin.document.body;
+  ['frame','chatOff','reactOff'].forEach(c=>b.classList.toggle(c,document.body.classList.contains(c)));
+  b.classList.add('clean');
+}
+function openOut(){
+  if(outWin&&!outWin.closed){outWin.focus();return;}
+  const w=window.open('','cpip-out','popup=yes,width=1280,height=760');
+  if(!w){status('새 창이 막혔어요. 주소창 오른쪽의 팝업 차단 표시를 눌러 이 사이트를 허용한 뒤 다시 눌러 주세요.',true);return;}
+  const d=w.document;
+  d.open(); d.write('<!doctype html><html lang="ko"><head><meta charset="utf-8"><title>🎬 방송 화면 · 교실 PIP</title></head><body></body></html>'); d.close();
+  document.querySelectorAll('head style, head link[rel=stylesheet]').forEach(n=>d.head.appendChild(d.importNode(n,true)));
+  const st=d.createElement('style'); st.textContent='html,body{background:#000;margin:0;overflow:hidden}body.idle{cursor:none}'; d.head.appendChild(st);
+  outWin=w;
+  d.body.appendChild(stage);   // 방송 화면(영상·카메라·필터·댓글)을 통째로 새 창으로 옮김
+  [mainVideo,camVideo].forEach(v=>{ if(v.srcObject||v.currentSrc) v.play().catch(()=>{}); });
+  w.addEventListener('resize',()=>{fitStage();layout();});
+  w.addEventListener('keydown',onKey);
+  let it; w.addEventListener('pointermove',()=>{d.body.classList.remove('idle');clearTimeout(it);it=setTimeout(()=>d.body.classList.add('idle'),2000);});
+  w.addEventListener('pagehide',()=>setTimeout(closeOut,0));
+  document.body.classList.add('outOpen');
+  applyAll(); restartLoop();
+  status('🎬 방송 화면 창을 띄웠어요. 그 창을 프로젝터 쪽 모니터로 옮기고, 창을 한 번 누른 뒤 F를 누르세요.');
+}
+function closeOut(){
+  const w=outWin; if(!w) return; outWin=null;
+  try{ if(stage.ownerDocument!==document) document.body.insertBefore(stage,document.body.firstChild); }catch(e){}
+  [mainVideo,camVideo].forEach(v=>{ if(v.srcObject||v.currentSrc) v.play().catch(()=>{}); });
+  document.body.classList.remove('outOpen');
+  try{ if(!w.closed) w.close(); }catch(e){}
+  applyAll(); restartLoop(); status('방송 화면을 이 창으로 다시 가져왔어요.');
+}
+setInterval(()=>{ if(outWin&&outWin.closed) closeOut(); },1000);
+window.addEventListener('pagehide',()=>{ try{ if(outWin&&!outWin.closed) outWin.close(); }catch(e){} });
+$('#outBtn').onclick=openOut; $('#outClose').onclick=closeOut;
+$('#outFocus').onclick=()=>{ if(outWin&&!outWin.closed) outWin.focus(); };
+$('#ctrlCamOff').onclick=()=>{
+  if(camOwned) stopCamera(); else { camStream=null; activePhone=null; camVideo.srcObject=null; }
+  applyAll(); status('카메라를 내렸어요. 영상만 나가요.');
+};
+$('#ctrlPip').onclick=()=>{S.pipOn=!S.pipOn;$('#pipChk').checked=S.pipOn;save();applyAll();};
+$('#ctrlMode').onclick=()=>{S.mode=S.mode==='frame'?'pip':'frame';save();applyAll();};
+$('#ctrlPlay').onclick=togglePlay;
+$('#ctrlStoryHide').onclick=hideStory;
+setInterval(()=>{
+  if(!outWin) return;
+  $('#ctrlClock').textContent=clockStr(Date.now());
+  const a=$('#ctrlAir'); a.classList.toggle('live',!!S.airStart);
+  a.textContent=S.airStart?'🔴 방송 '+hms(Date.now()-S.airStart):'방송 전';
+},1000);
 
 bindControls(); applyAll(); requestAnimationFrame(loop);
 if(!glOk) status('그래픽 가속이 꺼져 있어 크로마키는 못 써요. PIP는 돼요.',true);
