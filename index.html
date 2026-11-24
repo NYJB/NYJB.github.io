@@ -48,6 +48,34 @@ body.chatOff #chatList,body.reactOff .react,body.reactOff #starPop{display:none}
 #cheerForm{display:flex;gap:8px}
 #cheerForm input{flex:1}
 #cheer input{font-size:16px}
+#storyPop{position:absolute;left:50%;bottom:7%;transform:translateX(-50%);width:min(72%,60em);z-index:13;font-size:var(--chat,18px);pointer-events:none}
+.storyCard{background:linear-gradient(135deg,#fffaf2,#fff0f6);color:#3a2a33;border-radius:1.2em;padding:.9em 1.4em 1em;
+  box-shadow:0 12px 40px rgba(0,0,0,.45),0 0 0 .25em #ff9cc4 inset;animation:storyIn .5s ease-out;transition:opacity .6s,transform .6s}
+.storyCard .who{font-family:"Jua","Malgun Gothic",sans-serif;font-size:1.3em;color:#e24f8a;margin-bottom:.25em}
+.storyCard .txt{font-size:1.4em;line-height:1.45;white-space:pre-wrap;word-break:keep-all;overflow-wrap:anywhere}
+.storyCard.bye{opacity:0;transform:translateY(1em)}
+@keyframes storyIn{from{opacity:0;transform:translateY(1.5em) scale(.96)}to{opacity:1;transform:none}}
+#story{position:fixed;inset:0;z-index:90;background:linear-gradient(180deg,#3a2240,#160f1c);display:flex;flex-direction:column;padding:18px 16px max(16px,env(safe-area-inset-bottom));gap:10px;overflow:auto}
+#story .sTitle{font-family:"Jua","Malgun Gothic",sans-serif;font-size:26px}
+#story textarea{font:inherit;font-size:16px;color:var(--text);background:#0f1115;border:1px solid var(--line);border-radius:10px;padding:10px;resize:vertical;min-height:140px}
+#story input{font-size:16px}
+#story button.primary{padding:13px;font-size:17px;background:linear-gradient(135deg,#ff6fa5,#ff9a6f);border:0}
+.mine{background:rgba(255,255,255,.07);border-radius:10px;padding:8px 10px;font-size:14px}
+.mine .st{float:right;color:#ffd54a}
+.storyItem{border:1px solid var(--line);border-radius:10px;padding:8px 10px;margin:6px 0;background:#0f1115}
+.storyItem .meta{color:var(--muted);font-size:12px;display:flex;justify-content:space-between;gap:6px}
+.storyItem .txt{margin:4px 0;white-space:pre-wrap;word-break:keep-all;overflow-wrap:anywhere}
+.storyItem .btns{display:flex;gap:6px;flex-wrap:wrap}
+.storyItem .btns button{padding:4px 9px;font-size:13px}
+.storyItem.shown{border-color:#3d8b5a}
+.storyItem.new{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent) inset}
+.person{display:flex;align-items:center;justify-content:space-between;gap:6px;padding:4px 0;border-bottom:1px solid var(--line);font-size:13px}
+.person.blocked span{text-decoration:line-through;color:var(--muted)}
+.person button{padding:3px 8px;font-size:12px}
+#clock{font-variant-numeric:tabular-nums;font-size:22px;font-weight:700}
+#onair{font-variant-numeric:tabular-nums}
+#onair.live{color:#ff6b6b;font-weight:700}
+#storyLinkBtn{display:block;margin:12px auto 0;color:#cbbcf0;font-size:14px;background:none;border:0;text-decoration:underline;cursor:pointer}
 #gate #roleBtns .cheerBtn{grid-column:1 / -1;background:linear-gradient(135deg,#ff6fa5,#9b78ff);border:0;color:#fff}
 #hint{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;text-align:center;color:#8a92a0;font-size:22px;line-height:1.6;z-index:0;padding:24px}
 #mainVideo,#mainCanvas{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;z-index:2}
@@ -151,6 +179,21 @@ body.clean.idle #showBtn{opacity:0;pointer-events:none}
 .sendBtns{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .sendBtns button{padding:12px;font-size:16px}
 body.sending #panel,body.sending #showBtn{display:none}
+#sendBar{transition:opacity .4s}
+#sender.quiet #sendBar{opacity:0;pointer-events:none}
+#sender.quiet{cursor:none}
+#sendPrep{position:absolute;inset:0;z-index:3;overflow:auto;background:linear-gradient(180deg,#1c2433,#0b0e14);padding:22px 18px max(18px,env(safe-area-inset-bottom));
+  display:flex;flex-direction:column;gap:12px;font-size:16px}
+#sendPrep h3{margin:0;font-family:"Jua","Malgun Gothic",sans-serif;font-size:26px;font-weight:400}
+#sendPrep ol{margin:0;padding-left:1.3em;display:flex;flex-direction:column;gap:12px}
+#sendPrep li b{display:block;font-size:18px}
+#sendPrep li small{color:#aab3c2;font-size:14px}
+#sendPrep .prepChk{background:rgba(255,255,255,.08);border-radius:12px;padding:12px;font-size:17px}
+#sendPrep .prepChk input{width:20px;height:20px;vertical-align:-4px;margin-right:6px}
+#sendPrep button{padding:15px;font-size:18px}
+#sendPrep button:disabled{opacity:.45}
+#sendPrep p{margin:0;color:#aab3c2;font-size:14px}
+#sendPrep.hide{display:none}
 #roomBox .big{font-family:"Jua","Malgun Gothic",sans-serif;font-size:20px}
 #gateMsg{min-height:20px;margin-top:10px;color:#ff8a8a;font-size:14px}
 #gate.shake form{animation:shake .35s}
@@ -170,17 +213,39 @@ body.dragging #dropMask{display:flex}
       <button type="submit" data-role="send">📱 카메라 보내기<small>서브폰 쪽</small></button>
       <button type="submit" class="cheerBtn" data-role="cheer">💬 응원하기<small>학부모·구경하는 분</small></button>
     </div>
+    <button type="submit" id="storyLinkBtn" data-role="story">📮 영상 없이 사연만 보내기</button>
     <div id="gateMsg"></div>
   </form>
 </div>
 <div id="sender" class="hide">
   <video id="sendVideo" playsinline muted autoplay></video>
+  <div id="sendPrep">
+    <h3>📵 촬영 전에 꼭 해 주세요</h3>
+    <ol>
+      <li><b>방해 금지 모드 켜기</b><small>화면 맨 위에서 아래로 쓸어내려 '방해 금지'를 눌러요. 카톡·문자·전화 알림이 안 떠요.</small></li>
+      <li><b>충전기 꽂기</b><small>영상을 보내면 배터리가 빨리 닳아요.</small></li>
+      <li><b>가로로 찍을 거면 자동 회전 켜기</b><small>세로로 찍으면 그대로 두세요.</small></li>
+    </ol>
+    <label class="prepChk"><input type="checkbox" id="prepOk"> 방해 금지 모드를 켰어요</label>
+    <button class="primary" id="prepGo" disabled>📹 준비 끝! 촬영 시작</button>
+    <p>시작하면 전체 화면이 되고 버튼이 모두 숨어요. 화면을 톡 치면 잠깐 나타나요.<br>화면 꺼짐은 이 페이지가 막아 줘요.</p>
+  </div>
   <div id="sendBar">
     <div id="sendRoom"></div>
     <div id="sendStatus">카메라 켜는 중…</div>
     <input id="sendName" type="text" maxlength="12" placeholder="이 폰 이름 (예: 1모둠)">
     <div class="sendBtns"><button id="flipBtn">🔄 앞/뒤 카메라</button><button id="sendExit">나가기</button></div>
   </div>
+</div>
+<div id="story" class="hide">
+  <div id="storyRoom" class="sTitle">📮 사연 보내기</div>
+  <div class="note" style="color:#d8c4dc">학예회 화면에 띄울 사연을 보내 주세요. 선생님이 확인한 뒤 화면에 띄워요.<br>영상은 안내받은 유튜브 링크로 보시면 돼요.</div>
+  <input id="storyName" type="text" maxlength="10" placeholder="보내는 사람 (예: 민지 엄마)">
+  <textarea id="storyText" maxlength="200" placeholder="사연을 적어 주세요 (200자까지)"></textarea>
+  <div class="note" id="storyCount" style="text-align:right;color:#d8c4dc">0 / 200</div>
+  <button class="primary" id="storySend">📮 사연 보내기</button>
+  <div id="storyMsg" class="note" style="color:#ffd9e8;min-height:18px"></div>
+  <div id="storyMine"></div>
 </div>
 <div id="cheer" class="hide">
   <div id="cheerRoom">💬 응원하기</div>
@@ -209,7 +274,7 @@ body.dragging #dropMask{display:flex}
     <div id="dragCover" title="끌어서 옮기기"></div>
     <div id="resizer" title="끌어서 크기 바꾸기"></div>
   </div>
-  <div id="chatLayer"><div id="chatList"></div><div id="starPop"></div></div>
+  <div id="chatLayer"><div id="chatList"></div><div id="starPop"></div><div id="storyPop"></div></div>
   <div id="qrBox" class="hide" title="누르면 닫혀요"><div id="qrCard"><div id="qrTitle"></div><div id="qrCode"></div><div id="qrUrl"></div></div></div>
 </div>
 
@@ -239,6 +304,7 @@ body.dragging #dropMask{display:flex}
     <div id="roomBox">
       <div class="row"><span class="big">방 <b id="roomLabel">-</b></span><span class="note" id="phoneCount">들어온 폰 0대</span></div>
       <div class="row"><select id="phoneSelect"><option value="">(아직 들어온 폰이 없어요)</option></select></div>
+      <div class="row"><button id="phoneShow">👁 화면 끄기</button><button id="phoneSound">🔇 소리 꺼짐</button><button id="phoneKick">🚫 내보내기</button></div>
       <p class="note">서브폰에서 이 주소를 열고 <b>같은 방 번호</b> → <b>📱 카메라 보내기</b>를 누르면 여기에 떠요. 폰이 여러 대면 위 목록에서 골라요.</p>
       <div class="row"><button id="leaveRoom">방 나가기</button></div>
     </div>
@@ -344,7 +410,21 @@ body.dragging #dropMask{display:flex}
   </section>
 
   <section>
-    <h2>⑦ 응원 댓글 (학부모)</h2>
+    <h2>⑦ 사연함 · 시간 관리</h2>
+    <div class="row"><span id="clock">--:--:--</span><span class="note" id="onair">방송 전</span></div>
+    <div class="row"><button class="primary" id="airBtn">▶ 방송 시작</button><button id="storyQrBtn">📮 사연 QR</button><button id="copyStory">사연 링크 복사</button></div>
+    <div class="row"><label><input type="checkbox" id="autoStory"> 사연이 오면 바로 화면에 띄우기</label></div>
+    <div class="row note" style="margin-bottom:0">화면에 띄우는 시간</div>
+    <div class="seg" id="storyDurSeg"><button data-v="10">10초</button><button data-v="20">20초</button><button data-v="40">40초</button><button data-v="0">내릴 때까지</button></div>
+    <div class="row"><button id="storyHide">화면 사연 내리기</button><span class="note" id="storyCountLbl">사연 0개</span></div>
+    <div id="storyList"><p class="note">아직 사연이 없어요. 학부모에게 사연 링크나 QR을 보내 주세요.</p></div>
+    <p class="note">📺 유튜브로 내보내기: 무료 프로그램 OBS로 이 창을 잡아 유튜브 라이브(일부 공개)로 보내요. 유튜브 라이브는 처음 신청 후 최대 24시간 기다려야 하니 하루 전에 신청하세요.</p>
+    <h2 style="margin-top:14px">보낸 사람 (차단하면 댓글·사연이 안 떠요)</h2>
+    <div id="peopleList"><p class="note">아직 없어요.</p></div>
+  </section>
+
+  <section>
+    <h2>⑧ 응원 댓글 (학부모)</h2>
     <div class="row"><button class="primary" id="qrBtn">📱 QR 띄우기 (Q)</button><button id="chatClear">화면 댓글 지우기</button></div>
     <div class="row"><label><input type="checkbox" id="chatChk"> 댓글 보이기</label><label><input type="checkbox" id="reactChk"> 반응·별풍선 보이기</label></div>
     <div class="row note" id="chatState">댓글 연결 전</div>
@@ -435,7 +515,8 @@ function renderDeco(){
 const DEF={x:0.70,y:0.62,w:0.26,shape:'round',mirror:false,border:true,pipOn:true,mode:'pip',
   chroma:false,key:'#00ff00',sim:0.14,soft:0.08,loop:false,vol:1,src:'room',url:'',deviceId:'',room:'',
   zoom:1,rot:0,panX:0,panY:0,aspect:'auto',filter:'none',deco:'none',caption:'',ar:'none',
-  sub:'2026 5-6 학급학예회',subPos:'bottom',stageAspect:'16:9',chatOn:true,reactOn:true};
+  sub:'2026 5-6 학급학예회',subPos:'bottom',stageAspect:'16:9',chatOn:true,reactOn:true,
+  autoStory:false,storyDur:'20',blocked:[],airStart:0};
 DEF.aspect='16:9';
 let S=Object.assign({},DEF);
 try{const raw=localStorage.getItem('classroom-pip');if(raw)Object.assign(S,JSON.parse(raw));}catch(e){}
@@ -645,7 +726,7 @@ function applyAll(){
   cam.classList.remove('shape-rect','shape-round','shape-circle');cam.classList.add('shape-'+S.shape);
   cam.classList.toggle('bordered',S.border);
   setSeg('#aspectSeg',S.aspect);setSeg('#filterSeg',S.filter);setSeg('#filterSeg2',S.filter);
-  setSeg('#decoSeg',S.deco);setSeg('#decoSeg2',S.deco);
+  setSeg('#decoSeg',S.deco);setSeg('#decoSeg2',S.deco);setSeg('#storyDurSeg',String(S.storyDur));
   ['#arSeg1','#arSeg2','#arSeg3','#arSeg4','#arSeg5','#arSeg6'].forEach(id=>setSeg(id,S.ar));
   const F=FILTERS[S.filter]||FILTERS.none;
   camMedia.style.filter=F.f; tint.style.background=F.t;
@@ -679,7 +760,7 @@ function bindControls(){
   $('#simRange').value=S.sim; $('#softRange').value=S.soft;
   $('#zoomRange').value=S.zoom; $('#panXRange').value=S.panX; $('#panYRange').value=S.panY;
   $('#capInput').value=S.caption; $('#subInput').value=S.sub;
-  $('#chatChk').checked=S.chatOn; $('#reactChk').checked=S.reactOn;
+  $('#chatChk').checked=S.chatOn; $('#reactChk').checked=S.reactOn; $('#autoStory').checked=S.autoStory;
 }
 $('#subInput').oninput=e=>{S.sub=e.target.value;$('#subTitle').textContent=S.sub;save();};
 function setZoom(z){S.zoom=Math.min(4,Math.max(1,Math.round(z*100)/100));$('#zoomRange').value=S.zoom;save();applyMedia();}
@@ -708,6 +789,7 @@ segHandler('#filterSeg','filter');segHandler('#filterSeg2','filter');
 segHandler('#decoSeg','deco');segHandler('#decoSeg2','deco');
 segHandler('#subPosSeg','subPos');
 segHandler('#stageSeg','stageAspect');
+segHandler('#storyDurSeg','storyDur');
 ['#arSeg1','#arSeg2','#arSeg3','#arSeg4','#arSeg5','#arSeg6'].forEach(id=>segHandler(id,'ar',()=>{
   if(S.ar==='none') return;
   if(S.src==='remote'){status('VDO.Ninja 화면에는 얼굴 필터가 안 돼요. DroidCam으로 연결하면 돼요.',true);return;}
@@ -989,14 +1071,44 @@ function renderPhones(){
   let n=0; phones.forEach((p,id)=>{n++;const o=document.createElement('option');o.value=id;o.textContent='📱 '+(p.name||('폰 '+n));sel.appendChild(o);});
   if(activePhone&&phones.has(activePhone)) sel.value=activePhone;
   $('#phoneCount').textContent='들어온 폰 '+phones.size+'대';
+  if(typeof phoneBtns==='function') phoneBtns();
 }
 function usePhone(id){
   const p=phones.get(id); if(!p) return;
   if(camOwned) stopCamera(); stopRemote();
   camStream=p.stream; camOwned=false; activePhone=id;
-  camVideo.srcObject=p.stream; camVideo.play().catch(()=>{});
+  camVideo.srcObject=p.stream; camVideo.muted=!p.sound; camVideo.play().catch(()=>{});
   renderPhones(); applyAll(); status('📱 '+(p.name||'폰')+' 화면을 띄웠어요.');
 }
+/* 방장: 폰 화면·소리 켜고 끄기, 내보내기 */
+const kicked=new Set();
+function selPhone(){ return $('#phoneSelect').value||activePhone; }
+function phoneBtns(){
+  const id=selPhone(), p=phones.get(id);
+  $('#phoneShow').textContent=(id&&id===activePhone)?'👁 화면 끄기':'👁 화면 켜기';
+  $('#phoneSound').textContent=p&&p.sound?'🔊 소리 켜짐':'🔇 소리 꺼짐';
+  ['#phoneShow','#phoneSound','#phoneKick'].forEach(s=>$(s).disabled=!p);
+}
+$('#phoneShow').onclick=()=>{
+  const id=selPhone(); if(!phones.has(id)) return;
+  if(id===activePhone){ camStream=null; activePhone=null; camVideo.srcObject=null; applyAll(); status('폰 화면을 껐어요. 폰은 방에 그대로 있어요.'); }
+  else { S.src='room'; save(); usePhone(id); }
+  phoneBtns();
+};
+$('#phoneSound').onclick=()=>{
+  const id=selPhone(), p=phones.get(id); if(!p) return;
+  p.sound=!p.sound;
+  if(!p.stream.getAudioTracks().length){ p.sound=false; status('이 폰은 마이크를 허용하지 않아서 소리가 없어요.',true); }
+  if(id===activePhone){ camVideo.muted=!p.sound; if(p.sound) camVideo.play().catch(()=>{}); }
+  if(p.sound) status('🔊 '+(p.name||'폰')+' 소리를 켰어요. 스피커 가까이 있으면 "삐–" 소리가 날 수 있어요.');
+  phoneBtns();
+};
+$('#phoneKick').onclick=()=>{
+  const id=selPhone(), p=phones.get(id); if(!p) return;
+  if(!confirm((p.name||'이 폰')+'을(를) 내보낼까요? 이 폰은 다시 들어오려면 방에 새로 들어와야 해요.')) return;
+  kicked.add(id); chatSend(S.room,{k:'kickcam',pid:id,id:'host'});
+  try{p.call.close();}catch(e){} dropPhone(id); status('📱 '+(p.name||'폰')+'을 내보냈어요.'); phoneBtns();
+};
 function pickPhone(){
   if(activePhone&&phones.has(activePhone)) return usePhone(activePhone);
   const first=phones.keys().next().value;
@@ -1014,7 +1126,7 @@ function dropPhone(id,call){
   }
   renderPhones(); applyAll();
 }
-$('#phoneSelect').onchange=e=>{ if(e.target.value){ S.src='room'; save(); usePhone(e.target.value); } };
+$('#phoneSelect').onchange=e=>{ if(e.target.value){ S.src='room'; save(); usePhone(e.target.value); } phoneBtns(); };
 $('#leaveRoom').onclick=()=>location.reload();
 async function startScreen(room){
   $('#roomLabel').textContent=room;
@@ -1022,12 +1134,14 @@ async function startScreen(room){
   hPeer=new Peer(screenId(room),await peerOpts());
   hPeer.on('open',()=>{idTries=0;status('방 '+room+'을 열었어요. 폰에서 같은 번호로 "📱 카메라 보내기"를 누르세요.');});
   hPeer.on('call',call=>{
+    if(kicked.has(call.peer)){ try{call.close();}catch(e){} return; }
     call.answer();
     const slow=setTimeout(()=>{ const pc=call.peerConnection; if(pc&&pc.connectionState!=='connected') status('📱 폰이 들어왔는데 화면이 아직 안 와요. '+SLOW_TIP,true); },15000);
     call.on('stream',st=>{
       const pc0=call.peerConnection; if(pc0) pc0.addEventListener('connectionstatechange',()=>{ if(pc0.connectionState==='connected') clearTimeout(slow); });
       const name=(call.metadata&&call.metadata.name)||'';
-      phones.set(call.peer,{call,stream:st,name}); renderPhones();
+      const prev=phones.get(call.peer);
+      phones.set(call.peer,{call,stream:st,name,sound:prev?prev.sound:false}); renderPhones();
       if(S.src==='room'&&(!activePhone||activePhone===call.peer||!phones.has(activePhone))) usePhone(call.peer);
       else status('📱 '+(name||'폰')+'이 들어왔어요. ② 목록에서 고르면 떠요.');
     });
@@ -1048,14 +1162,24 @@ async function startScreen(room){
 
 /* 폰 쪽: 카메라 보내기 */
 let sPeer=null,sStream=null,sCall=null,sRoom='',facing='environment',sRetry=null;
-function sStatus(m,cls){const el=$('#sendStatus');el.textContent=m;el.className=cls||'';}
+function sStatus(m,cls){const el=$('#sendStatus');el.textContent=m;el.className=cls||'';
+  const s=$('#sender'); if(cls==='warn'){clearTimeout(quietT);s.classList.remove('quiet');} else if(cls==='ok') quietLater();}
 async function sGetCam(){
+  const vc={facingMode:{ideal:facing},width:{ideal:1280},height:{ideal:720}};
   try{
-    if(sStream) sStream.getTracks().forEach(t=>t.stop());
-    const st=await navigator.mediaDevices.getUserMedia({audio:false,video:{facingMode:{ideal:facing},width:{ideal:1280},height:{ideal:720}}});
-    sStream=st; const v=$('#sendVideo'); v.srcObject=st; v.style.transform=facing==='user'?'scaleX(-1)':'';
-    if(sCall&&sCall.peerConnection){const snd=sCall.peerConnection.getSenders().find(s=>s.track&&s.track.kind==='video');
-      if(snd) await snd.replaceTrack(st.getVideoTracks()[0]);}
+    if(!sStream){
+      // 처음: 화면+소리 (소리는 선생님 화면에서 켤 때만 들려요). 마이크를 막으면 화면만.
+      try{ sStream=await navigator.mediaDevices.getUserMedia({video:vc,audio:{echoCancellation:true,noiseSuppression:true}}); }
+      catch(e){ if(e.name==='NotAllowedError'||e.name==='NotFoundError'||e.name==='NotReadableError') sStream=await navigator.mediaDevices.getUserMedia({video:vc,audio:false}); else throw e; }
+    }else{
+      // 앞/뒤 바꾸기: 영상만 새로 받아서 갈아 끼움 (소리는 그대로)
+      sStream.getVideoTracks().forEach(t=>{t.stop();sStream.removeTrack(t);});
+      const nv=(await navigator.mediaDevices.getUserMedia({video:vc,audio:false})).getVideoTracks()[0];
+      sStream.addTrack(nv);
+      if(sCall&&sCall.peerConnection){const snd=sCall.peerConnection.getSenders().find(s=>s.track===null||(s.track&&s.track.kind==='video'));
+        if(snd) await snd.replaceTrack(nv);}
+    }
+    const v=$('#sendVideo'); v.srcObject=sStream; v.style.transform=facing==='user'?'scaleX(-1)':'';
     return true;
   }catch(e){
     sStatus(e.name==='NotAllowedError'?'카메라 허용을 눌러 주세요. 주소창 옆 자물쇠에서 바꿀 수 있어요.':'카메라를 켤 수 없어요: '+e.message,'warn');
@@ -1080,14 +1204,31 @@ function sCallScreen(){
   call.on('close',()=>{ if(sCall===call){sStatus('노트북 화면이 닫혔어요. 다시 연결하는 중…','warn');retryLater();} });
 }
 function keepAwake(){try{if(navigator.wakeLock)navigator.wakeLock.request('screen').catch(()=>{});}catch(e){}}
-async function startSender(room){
+/* 촬영 중에는 버튼·글자를 숨김. 화면을 톡 치면 4초 동안 보임 */
+let quietT=null;
+function quietLater(){ const s=$('#sender'); s.classList.remove('quiet'); clearTimeout(quietT);
+  quietT=setTimeout(()=>{ if(!$('#sendStatus').classList.contains('warn')&&document.activeElement!==$('#sendName')) s.classList.add('quiet'); },4000); }
+function goFull(){ try{ const el=document.documentElement; if(!document.fullscreenElement&&el.requestFullscreen) el.requestFullscreen({navigationUI:'hide'}).catch(()=>{}); }catch(e){} }
+$('#sender').addEventListener('click',e=>{ if($('#sendPrep').classList.contains('hide')){ goFull(); quietLater(); } });
+$('#prepOk').onchange=e=>{ $('#prepGo').disabled=!e.target.checked; };
+function startSender(room){
   sRoom=room; document.body.classList.add('sending');
   $('#sender').classList.remove('hide'); $('#sendRoom').textContent='📱 방 '+room;
   try{$('#sendName').value=localStorage.getItem('classroom-pip-name')||'';}catch(e){}
+  $('#prepGo').onclick=()=>{ goFull(); $('#sendPrep').classList.add('hide'); beginSend(room); };
+}
+async function beginSend(room){
   if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){sStatus('이 브라우저는 카메라를 못 써요. 크롬으로 여세요.','warn');return;}
   if(typeof Peer==='undefined'){sStatus('연결 도구를 못 불러왔어요. 인터넷을 확인하세요.','warn');return;}
   if(!(await sGetCam())) return;
   sStatus('화면을 찾는 중…');
+  chatListen(room,m=>{
+    if(m&&m.k==='kickcam'&&sPeer&&m.pid===sPeer.id){
+      clearTimeout(sRetry); const p=sPeer; sPeer=null; try{p.destroy();}catch(e){}
+      if(sStream) sStream.getTracks().forEach(t=>t.stop());
+      sStatus('선생님이 이 폰의 연결을 끊었어요. 다시 보내려면 "나가기"를 누르고 다시 들어오세요.','warn');
+    }
+  });
   sPeer=new Peer(await peerOpts());
   sPeer.on('open',sCallScreen);
   sPeer.on('error',e=>{
@@ -1112,16 +1253,25 @@ function cleanText(s,max){
   BAD.forEach(w=>{ if(w) s=s.split(w).join('♥'.repeat(Math.min(w.length,3))); });
   return s;
 }
+function myUid(){
+  let u=''; try{u=localStorage.getItem('classroom-pip-uid')||'';}catch(e){}
+  if(!u){u=Math.random().toString(36).slice(2,10); try{localStorage.setItem('classroom-pip-uid',u);}catch(e){}}
+  return u;
+}
 async function chatSend(room,obj){
+  obj.id=obj.id||myUid();
   try{ const r=await fetch(NTFY+chatTopic(room),{method:'POST',body:encodeURIComponent(JSON.stringify(obj))}); return r.ok; }catch(e){ return false; }
 }
-function chatListen(room,onMsg,onState){
-  const es=new EventSource(NTFY+chatTopic(room)+'/sse');
+/* since: '12h'처럼 주면 지난 메시지도 받음. 콜백에 서버 시각(ms)을 같이 넘김 */
+function chatListen(room,onMsg,onState,since){
+  const es=new EventSource(NTFY+chatTopic(room)+'/sse'+(since?'?since='+since:''));
   es.onopen=()=>onState&&onState(true);
   es.onerror=()=>onState&&onState(false);
-  es.onmessage=e=>{ try{ const d=JSON.parse(e.data); if(d.event!=='message') return; onMsg(JSON.parse(decodeURIComponent(d.message))); }catch(err){} };
+  es.onmessage=e=>{ try{ const d=JSON.parse(e.data); if(d.event!=='message') return; onMsg(JSON.parse(decodeURIComponent(d.message)),(d.time||0)*1000); }catch(err){} };
   return es;
 }
+const hms=ms=>{ms=Math.max(0,ms|0);const s=Math.floor(ms/1000);return [Math.floor(s/3600),Math.floor(s/60)%60,s%60].map(x=>String(x).padStart(2,'0')).join(':');};
+const clockStr=ms=>{const d=new Date(ms);return [d.getHours(),d.getMinutes(),d.getSeconds()].map(x=>String(x).padStart(2,'0')).join(':');};
 function chatEl(m){
   const d=document.createElement('div'); d.className='chat';
   const b=document.createElement('b'); b.textContent=cleanText(m.n,10)||'익명';
@@ -1159,33 +1309,121 @@ function nextStar(){
   showReact('🎉',4);
   setTimeout(()=>{card.remove();nextStar();},4300);
 }
-function onChat(m){
+/* 선생님 화면: 보낸 사람·차단·사연함 */
+const people=new Map(), stories=[], screenStart=Date.now();
+const isBlocked=id=>!!id&&S.blocked.includes(id);
+function notePerson(m,time){
+  if(!m.id||!['c','r','s','story'].includes(m.k)) return;
+  const p=people.get(m.id)||{n:'',count:0,last:0};
+  if(m.n) p.n=cleanText(m.n,10); p.count++; p.last=Math.max(p.last,time||Date.now());
+  people.set(m.id,p);
+}
+function renderPeople(){
+  const box=$('#peopleList'); box.innerHTML='';
+  if(!people.size){box.innerHTML='<p class="note">아직 없어요.</p>';return;}
+  [...people.entries()].sort((a,b)=>b[1].last-a[1].last).forEach(([id,p])=>{
+    const row=document.createElement('div'); row.className='person'+(isBlocked(id)?' blocked':'');
+    const s=document.createElement('span'); s.textContent=(p.n||'익명')+' · '+p.count+'번 · '+clockStr(p.last); row.appendChild(s);
+    const b=document.createElement('button'); b.textContent=isBlocked(id)?'차단 풀기':'🚫 차단';
+    b.onclick=()=>setBlock(id,!isBlocked(id)); row.appendChild(b); box.appendChild(row);
+  });
+}
+function setBlock(id,on){
+  S.blocked=S.blocked.filter(x=>x!==id); if(on) S.blocked.push(id); save();
+  chatSend(S.room,{k:on?'block':'unblock',to:id,id:'host'});
+  if(on){ [...$('#chatList').children].forEach(el=>{ if(el.dataset.id===id) el.remove(); }); }
+  renderPeople(); renderStories();
+}
+function renderStories(){
+  const box=$('#storyList'); box.innerHTML='';
+  const list=stories.filter(s=>!s.deleted);
+  $('#storyCountLbl').textContent='사연 '+list.length+'개 · 안 띄운 것 '+list.filter(s=>!s.shown).length+'개';
+  if(!list.length){box.innerHTML='<p class="note">아직 사연이 없어요. 학부모에게 사연 링크나 QR을 보내 주세요.</p>';return;}
+  list.forEach(s=>{
+    const it=document.createElement('div'); it.className='storyItem'+(s.shown?' shown':'')+(s.fresh&&!s.shown?' new':'');
+    const meta=document.createElement('div'); meta.className='meta';
+    const a=document.createElement('span'); a.textContent=(isBlocked(s.id)?'🚫 ':'')+s.n;
+    const ago=Math.round((Date.now()-s.time)/60000);
+    const b=document.createElement('span'); b.textContent=clockStr(s.time)+' ('+(ago<1?'방금':ago+'분 전')+')'+(s.shown?' · 띄움 ✓':'');
+    meta.appendChild(a); meta.appendChild(b);
+    const t=document.createElement('div'); t.className='txt'; t.textContent=s.m;
+    const btns=document.createElement('div'); btns.className='btns';
+    const mk=(label,fn,cls)=>{const x=document.createElement('button');x.textContent=label;if(cls)x.className=cls;x.onclick=fn;btns.appendChild(x);};
+    mk('📺 띄우기',()=>showStory(s),'primary'); mk('지우기',()=>{s.deleted=true;renderStories();});
+    if(s.id) mk(isBlocked(s.id)?'차단 풀기':'🚫 차단',()=>setBlock(s.id,!isBlocked(s.id)));
+    it.appendChild(meta); it.appendChild(t); it.appendChild(btns); box.appendChild(it);
+  });
+}
+let storyT=null;
+function showStory(s){
+  const pop=$('#storyPop'); pop.innerHTML='';
+  const card=document.createElement('div'); card.className='storyCard';
+  const w=document.createElement('div'); w.className='who'; w.textContent='📮 '+s.n+'님의 사연';
+  const t=document.createElement('div'); t.className='txt'; t.textContent=s.m;
+  card.appendChild(w); card.appendChild(t); pop.appendChild(card);
+  s.shown=true; s.fresh=false; renderStories();
+  chatSend(S.room,{k:'shown',sid:s.sid,to:s.id,id:'host'});
+  clearTimeout(storyT); const d=+S.storyDur; if(d) storyT=setTimeout(hideStory,d*1000);
+}
+function hideStory(){ clearTimeout(storyT); const c=$('#storyPop .storyCard'); if(c){c.classList.add('bye');setTimeout(()=>c.remove(),600);} }
+function onStory(m,time,old){
+  const txt=cleanText(m.m,200); if(!txt) return;
+  const sid=m.sid||(m.id+'-'+time);
+  if(stories.some(s=>s.sid===sid)) return;
+  const s={sid,id:m.id,n:cleanText(m.n,10)||'익명',m:txt,time:time||Date.now(),shown:false,fresh:!old};
+  stories.unshift(s); renderStories();
+  if(!old){ status('📮 새 사연이 왔어요: '+s.n); if(S.autoStory&&!isBlocked(s.id)) showStory(s); }
+}
+function onChat(m,time){
   if(!m||typeof m!=='object') return;
-  if(m.k==='c'&&cleanText(m.m)) showChat(m);
+  const old=time&&time<screenStart-3000;   // 화면을 열기 전에 온 지난 메시지
+  if(m.k==='shown'){ const s=stories.find(x=>x.sid===m.sid); if(s){s.shown=true;renderStories();} return; }
+  if(m.k==='block'||m.k==='unblock') return;
+  notePerson(m,time); renderPeople();
+  if(m.k==='story'){ onStory(m,time,old); return; }
+  if(old||isBlocked(m.id)) return;
+  if(m.k==='c'&&cleanText(m.m)){ showChat(m); const last=$('#chatList').lastChild; if(last) last.dataset.id=m.id||''; }
   else if(m.k==='r') showReact(m.r,m.c);
   else if(m.k==='s') showStar(m);
 }
 let chatES=null;
 function startChatScreen(room){
   if(!window.EventSource){$('#chatState').textContent='이 브라우저는 댓글을 받을 수 없어요.';return;}
-  chatES=chatListen(room,onChat,ok=>{$('#chatState').textContent=ok?'✅ 댓글 받는 중 (방 '+room+')':'댓글 서버 다시 연결 중…';});
+  chatES=chatListen(room,onChat,ok=>{$('#chatState').textContent=ok?'✅ 댓글·사연 받는 중 (방 '+room+')':'댓글 서버 다시 연결 중…';},'12h');
 }
+$('#autoStory').onchange=e=>{S.autoStory=e.target.checked;save();};
+$('#storyHide').onclick=hideStory;
+$('#airBtn').onclick=()=>{ S.airStart=S.airStart?0:Date.now(); save(); tick(); };
+function tick(){
+  $('#clock').textContent=clockStr(Date.now());
+  const oa=$('#onair'); oa.classList.toggle('live',!!S.airStart);
+  oa.textContent=S.airStart?'🔴 방송 '+hms(Date.now()-S.airStart)+' (시작 '+clockStr(S.airStart)+')':'방송 전';
+  $('#airBtn').textContent=S.airStart?'■ 방송 끝':'▶ 방송 시작';
+}
+setInterval(tick,1000); setInterval(()=>{ if(stories.length) renderStories(); },30000);
+$('#copyStory').onclick=async()=>{
+  if(!S.room) return; const u=roleUrl(S.room,'story');
+  try{await navigator.clipboard.writeText(u);status('사연 링크를 복사했어요: '+u);}catch(e){status('복사가 안 돼요. 이 주소를 보내 주세요: '+u,true);}
+};
 $('#chatChk').onchange=e=>{S.chatOn=e.target.checked;save();applyAll();};
 $('#reactChk').onchange=e=>{S.reactOn=e.target.checked;save();applyAll();};
 $('#chatClear').onclick=()=>{$('#chatList').innerHTML='';$('#starPop').innerHTML='';starQ.length=0;starBusy=false;};
-function cheerUrl(room){return location.origin+location.pathname+'?room='+encodeURIComponent(room)+'&role=cheer';}
+function roleUrl(room,role){return location.origin+location.pathname+'?room='+encodeURIComponent(room)+'&role='+role;}
 let qrMadeFor='';
-function toggleQR(force){
-  const box=$('#qrBox'), show=force!==undefined?force:box.classList.contains('hide');
-  if(show&&S.room&&qrMadeFor!==S.room){
-    const url=cheerUrl(S.room); $('#qrCode').innerHTML='';
+function toggleQR(force,kind){
+  kind=kind||'cheer';
+  const box=$('#qrBox'), show=force!==undefined?force:(box.classList.contains('hide')||qrMadeFor!==S.room+kind);
+  if(show&&S.room&&qrMadeFor!==S.room+kind){
+    const url=roleUrl(S.room,kind); $('#qrCode').innerHTML='';
     if(window.QRCode) new QRCode($('#qrCode'),{text:url,width:512,height:512,correctLevel:QRCode.CorrectLevel.M});
     else $('#qrCode').textContent='(QR을 못 만들었어요. 아래 주소를 알려 주세요)';
-    $('#qrTitle').textContent='📱 찍고 응원하기! · 방 '+S.room; $('#qrUrl').textContent=url; qrMadeFor=S.room;
+    $('#qrTitle').textContent=(kind==='story'?'📮 찍고 사연 보내기!':'📱 찍고 응원하기!')+' · 방 '+S.room;
+    $('#qrUrl').textContent=url; qrMadeFor=S.room+kind;
   }
   box.classList.toggle('hide',!show);
 }
-$('#qrBtn').onclick=()=>toggleQR(); $('#qrBox').onclick=()=>toggleQR(false);
+$('#qrBtn').onclick=()=>toggleQR(undefined,'cheer'); $('#storyQrBtn').onclick=()=>toggleQR(undefined,'story');
+$('#qrBox').onclick=()=>toggleQR(false);
 
 /* 학부모 쪽: 응원하기 */
 let lastSend=0,lastStar=0,reactBuf={},reactT=null,cRoom='';
@@ -1202,11 +1440,19 @@ function startCheer(room){
   const feed=$('#cheerFeed');
   chatListen(room,m=>{
     if(!m) return; let el;
+    if(m.k==='block'||m.k==='unblock'){ if(m.to===myUid()) setCheerBlocked(m.k==='block'); return; }
+    if(isBlocked(m.id)) return;
     if(m.k==='c') el=chatEl(m);
     else if(m.k==='s'){el=chatEl({n:m.n,m:'⭐ 별풍선! '+(m.m||'')});}
     else return;
     feed.appendChild(el); while(feed.children.length>60) feed.firstChild.remove(); feed.scrollTop=feed.scrollHeight;
   },ok=>cheerMsg(ok?'연결됐어요. 응원을 보내 보세요!':'연결 중…'));
+}
+let cheerBlocked=false;
+function setCheerBlocked(on){
+  cheerBlocked=on;
+  document.querySelectorAll('#cheer button,#cheer input').forEach(x=>x.disabled=on);
+  cheerMsg(on?'선생님이 이 기기의 보내기를 막았어요.':'다시 보낼 수 있어요.');
 }
 $('#cheerName').onchange=e=>{try{localStorage.setItem('classroom-pip-cheername',cleanText(e.target.value,10));}catch(err){}};
 $('#cheerForm').addEventListener('submit',async e=>{
@@ -1228,6 +1474,42 @@ document.querySelectorAll('.cheerQuick button').forEach(b=>b.onclick=async()=>{
   b.animate([{transform:'scale(1)'},{transform:'scale(1.15)'},{transform:'scale(1)'}],{duration:220});
 });
 
+/* 학부모 쪽: 사연만 보내기 */
+let sRoomStory='',storyBlocked=false,lastStory=0; const myStories=[];
+function storyMsg(t){$('#storyMsg').textContent=t;}
+function renderMine(){
+  const box=$('#storyMine'); box.innerHTML='';
+  myStories.forEach(s=>{const d=document.createElement('div');d.className='mine';
+    const st=document.createElement('span');st.className='st';st.textContent=s.shown?'📺 화면에 떴어요!':'보냄 · '+clockStr(s.time);
+    d.appendChild(st);d.appendChild(document.createTextNode(s.m.length>40?s.m.slice(0,40)+'…':s.m));box.appendChild(d);});
+}
+function startStory(room){
+  sRoomStory=room; document.body.classList.add('sending');
+  $('#story').classList.remove('hide'); $('#storyRoom').textContent='📮 방 '+room+' 사연 보내기';
+  try{$('#storyName').value=localStorage.getItem('classroom-pip-cheername')||'';}catch(e){}
+  chatListen(room,m=>{
+    if(!m) return;
+    if((m.k==='block'||m.k==='unblock')&&m.to===myUid()){ storyBlocked=m.k==='block';
+      $('#storySend').disabled=storyBlocked; storyMsg(storyBlocked?'선생님이 이 기기의 보내기를 막았어요.':'다시 보낼 수 있어요.'); }
+    if(m.k==='shown'&&m.to===myUid()){ const s=myStories.find(x=>x.sid===m.sid); if(s){s.shown=true;renderMine();} }
+  },ok=>{ if(!ok) storyMsg('연결 중…'); });
+}
+$('#storyText').oninput=e=>{$('#storyCount').textContent=e.target.value.length+' / 200';};
+$('#storyName').onchange=e=>{try{localStorage.setItem('classroom-pip-cheername',cleanText(e.target.value,10));}catch(err){}};
+$('#storySend').onclick=async()=>{
+  if(storyBlocked) return;
+  const txt=cleanText($('#storyText').value,200);
+  if(!txt){storyMsg('사연을 적어 주세요.');return;}
+  if(Date.now()-lastStory<20000){storyMsg('사연은 20초에 한 번만 보낼 수 있어요.');return;}
+  lastStory=Date.now(); $('#storySend').disabled=true; storyMsg('보내는 중…');
+  const sid=myUid()+'-'+Date.now().toString(36);
+  const ok=await chatSend(sRoomStory,{k:'story',sid,n:cleanText($('#storyName').value,10),m:txt});
+  $('#storySend').disabled=storyBlocked;
+  if(ok){ myStories.unshift({sid,m:txt,time:Date.now(),shown:false}); renderMine(); $('#storyText').value=''; $('#storyCount').textContent='0 / 200';
+    storyMsg('📮 보냈어요! 선생님이 확인하고 화면에 띄워 줄 거예요.'); }
+  else { lastStory=0; storyMsg('못 보냈어요. 인터넷을 확인하고 다시 눌러 주세요.'); }
+};
+
 /* 방 번호 입장 */
 const gate=$('#gate');
 try{const r=localStorage.getItem('classroom-pip-room');if(r)$('#gateInput').value=r;}catch(e){}
@@ -1245,9 +1527,10 @@ function enterRoom(v,role){
   S.room=v; gate.remove();
   if(role==='send') startSender(v);
   else if(role==='cheer') startCheer(v);
+  else if(role==='story') startStory(v);
   else { startChatScreen(v); startScreen(v); if(S.src==='local') startCamera(S.deviceId); else if(S.src==='room') pickPhone(); }
 }
-if(/^\d{2,8}$/.test(qs.get('room')||'')&&qs.get('role')==='cheer') enterRoom(qs.get('room'),'cheer');
+if(/^\d{2,8}$/.test(qs.get('room')||'')&&['cheer','story'].includes(qs.get('role'))) enterRoom(qs.get('room'),qs.get('role'));
 else setTimeout(()=>{const i=$('#gateInput');if(i)i.focus();},50);
 
 bindControls(); applyAll(); requestAnimationFrame(loop);
